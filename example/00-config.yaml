@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2021 SAP SE or an SAP affiliate company and Gardener contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+apiVersion: shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1
+kind: Configuration
+egressFilter:
+  blackholingEnabled: true
+  filterListProviderType: static
+  staticFilterList:
+    - network: 1.2.3.4/31
+      policy: BLOCK_ACCESS
+    - network: 5.6.7.8/32
+      policy: BLOCK_ACCESS
+    - network: ::2/128
+      policy: BLOCK_ACCESS
+
+#  filterListProviderType: download
+#  downloaderConfig:
+#    endpoint: https://my.filter.list.server/lists/policy
+#    oauth2Endpoint: https://my.auth.server/oauth2/token
+#    refreshPeriod: 1h
+

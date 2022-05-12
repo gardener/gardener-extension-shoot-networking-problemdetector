@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2021 SAP SE or an SAP affiliate company and Gardener contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: extension-shoot-networking-problemdetector.config
+  namespace: {{ .Release.Namespace }}	
+data:
+  config.yaml: |
+    apiVersion: shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1
+    kind: Configuration
+{{- if .Values.egressFilter }}
+    egressFilter:
+  {{- range $k, $v := .Values.egressFilter }}
+    {{- if ne $k "oauth2Secret" }}
+      {{ $k }}:
+{{ toYaml $v | trim | indent 8 }}
+    {{- end}}
+  {{- end}}
+{{- end}}
