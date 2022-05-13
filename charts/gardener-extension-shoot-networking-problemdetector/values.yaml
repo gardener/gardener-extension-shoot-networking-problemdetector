@@ -49,3 +49,5 @@ metrics:
 
 networkProblemDetector:
   defaultPeriod: 15s
+#  pspDisabled: false # pod security policy
+#  pingEnabled: false

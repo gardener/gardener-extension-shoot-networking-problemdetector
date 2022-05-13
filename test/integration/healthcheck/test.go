@@ -37,8 +37,8 @@ var _ = ginkgo.Describe("Extension-shoot-networking-problemdetector integration 
 
 	ginkgo.Context("Extension", func() {
 		ginkgo.Context("Condition type: ShootSystemComponentsHealthy", func() {
-			f.Serial().Release().CIt(fmt.Sprintf("Extension CRD should contain unhealthy condition due to ManagedResource '%s' is unhealthy", constants.ManagedResourceNamesShoot), func(ctx context.Context) {
-				err := healthcheckoperation.ExtensionHealthCheckWithManagedResource(ctx, timeout, f, "shoot-networking-problemdetector", constants.ManagedResourceNamesShoot, gardencorev1beta1.ShootSystemComponentsHealthy)
+			f.Serial().Release().CIt(fmt.Sprintf("Extension CRD should contain unhealthy condition due to ManagedResource '%s' is unhealthy", constants.ManagedResourceNamesAgentShoot), func(ctx context.Context) {
+				err := healthcheckoperation.ExtensionHealthCheckWithManagedResource(ctx, timeout, f, "shoot-networking-problemdetector", constants.ManagedResourceNamesAgentShoot, gardencorev1beta1.ShootSystemComponentsHealthy)
 				framework.ExpectNoError(err)
 			}, timeout)
 		})

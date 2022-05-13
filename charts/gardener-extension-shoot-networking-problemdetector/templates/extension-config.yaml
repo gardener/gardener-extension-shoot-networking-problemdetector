@@ -12,12 +12,10 @@ data:
   config.yaml: |
     apiVersion: shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1
     kind: Configuration
-{{- if .Values.egressFilter }}
-    egressFilter:
-  {{- range $k, $v := .Values.egressFilter }}
-    {{- if ne $k "oauth2Secret" }}
+{{- if .Values.networkProblemDetector }}
+    networkProblemDetector:
+  {{- range $k, $v := .Values.networkProblemDetector }}
       {{ $k }}:
 {{ toYaml $v | trim | indent 8 }}
-    {{- end}}
   {{- end}}
 {{- end}}

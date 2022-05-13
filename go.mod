@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.2.0
 	github.com/gardener/gardener v1.45.0
+	github.com/gardener/network-problem-detector v0.0.0-20220513155355-109ebce35869
 	github.com/go-logr/logr v1.2.0
 	github.com/onsi/ginkgo/v2 v2.1.3
 	github.com/onsi/gomega v1.18.0
@@ -57,7 +58,7 @@ require (
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38 // indirect
-	github.com/google/uuid v1.1.2 // indirect
+	github.com/google/uuid v1.2.0 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect

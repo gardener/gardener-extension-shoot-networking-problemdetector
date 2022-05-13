@@ -1,0 +1,100 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "network-problem-detector-controller.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    helm.sh/chart: {{ include "network-problem-detector-controller.chart" . }}
+    app.kubernetes.io/name: {{ include "network-problem-detector-controller.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  revisionHistoryLimit: 0
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "network-problem-detector-controller.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+        {{- if .Values.podAnnotations }}
+{{ toYaml .Values.podAnnotations | indent 8 }}
+        {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "network-problem-detector-controller.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        gardener.cloud/role: controlplane
+        networking.gardener.cloud/to-shoot-apiserver: allowed
+        networking.gardener.cloud/from-prometheus: allowed
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ index .Values.images "network-problem-detector-controller" }}
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /var/run/secrets/gardener.cloud/shoot/generic-kubeconfig
+          name: kubeconfig
+          readOnly: true
+        {{- if .Values.configuration.caCertificates }}
+        - name: ca-certificates
+          mountPath: "/etc/ssl/certs"
+          readOnly: true
+        {{- end }}
+        command:
+            - /nwpdcli
+            - run-controller
+            - --kubeconfig=/var/run/secrets/gardener.cloud/shoot/generic-kubeconfig/kubeconfig
+            - --http-port={{ .Values.configuration.serverPortHttp }}
+        ports:
+        - name: metrics
+          containerPort: {{ .Values.configuration.serverPortHttp }}
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.configuration.serverPortHttp }}
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      volumes:
+      - name: kubeconfig
+        projected:
+          defaultMode: 420
+          sources:
+          - secret:
+              items:
+              - key: kubeconfig
+                path: kubeconfig
+              name: {{ .Values.genericTokenKubeconfigSecretName }}
+              optional: false
+          - secret:
+              items:
+              - key: token
+                path: token
+              name: {{ .Values.shootClusterSecret }}
+              optional: false
+      {{- if .Values.configuration.caCertificates }}
+      - name: ca-certificates
+        configMap:
+          name: {{ include "network-problem-detector-controller.fullname" . }}-ca-certificates
+      {{- end }}
+      serviceAccountName: {{ include "network-problem-detector-controller.name" . }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

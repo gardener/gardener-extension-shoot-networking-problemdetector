@@ -41,7 +41,7 @@ func RegisterHealthChecks(mgr manager.Manager, opts healthcheck.DefaultAddArgs) 
 		[]healthcheck.ConditionTypeToHealthCheck{
 			{
 				ConditionType: string(gardencorev1beta1.ShootSystemComponentsHealthy),
-				HealthCheck:   general.CheckManagedResource(constants.ManagedResourceNamesShoot),
+				HealthCheck:   general.CheckManagedResource(constants.ManagedResourceNamesAgentShoot),
 			},
 		},
 	)

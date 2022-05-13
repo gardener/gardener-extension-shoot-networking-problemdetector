@@ -103,6 +103,30 @@ Kubernetes meta/v1.Duration
 <p>DefaultPeriod is the default period for jobs running in the agent.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>pspDisabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PSPDisabled is a flag to disable pod security policy.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>pingEnabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PingEnabled is a flag if ICMP ping checks should be performed.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <hr/>

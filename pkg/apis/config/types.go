@@ -27,4 +27,10 @@ type Configuration struct {
 type NetworkProblemDetector struct {
 	// DefaultPeriod is the default period for jobs running in the agent.
 	DefaultPeriod *metav1.Duration
+
+	// PSPDisabled is a flag to disable pod security policy.
+	PSPDisabled *bool
+
+	// PingEnabled is a flag if ICMP ping checks should be performed.
+	PingEnabled *bool
 }

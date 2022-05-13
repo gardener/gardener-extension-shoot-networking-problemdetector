@@ -1,0 +1,30 @@
+seedNamespace: shoot--project--shootname
+
+nameOverride: ""
+fullnameOverride: network-problem-detector-controller
+
+replicaCount: 1
+
+images:
+  network-problem-detector-controller: any-repo:any-tag
+
+shootClusterSecret: network-problem-detector-controller-kubecfg
+podAnnotations: {}
+
+genericTokenKubeconfigSecretName: generic-token-kubeconfig
+
+resources:
+  requests:
+   cpu: 10m
+   memory: 48Mi
+  limits:
+   cpu: 50m
+   memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+# priorityClassName: ""
+
+configuration:
+  serverPortHttp: 10258

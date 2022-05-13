@@ -27,9 +27,6 @@ spec:
     metadata:
       annotations:
         checksum/configmap-extension-shoot-networking-problemdetector.config: {{ include (print $.Template.BasePath "/extension-config.yaml") . | sha256sum }}
-        {{- if .Values.egressFilter.oauth2Secret }}
-        checksum/secret-extension-shoot-networking-problemdetector.oauth2: {{ include (print $.Template.BasePath "/secret-oauth2.yaml") . | sha256sum }}
-        {{- end }}
         {{- if .Values.imageVectorOverwrite }}
         checksum/configmap-extension-imagevector-overwrite: {{ include (print $.Template.BasePath "/configmap-imagevector-overwrite.yaml") . | sha256sum }}
         {{- end }}
@@ -67,9 +64,6 @@ spec:
         command:
         - /gardener-extension-shoot-networking-problemdetector
         - --config=/etc/shoot-networking-problemdetector/config.yaml
-        {{- if .Values.egressFilter.oauth2Secret }}
-        - --oauth2-config-dir=/etc/shoot-networking-problemdetector/oauth2
-        {{- end }}
         - --lifecycle-max-concurrent-reconciles={{ .Values.controllers.lifecycle.concurrentSyncs }}
         - --healthcheck-max-concurrent-reconciles={{ .Values.controllers.healthcheck.concurrentSyncs }}
         - --ignore-operation-annotation={{ .Values.controllers.ignoreOperationAnnotation }}
@@ -96,11 +90,6 @@ spec:
         - name: shoot-networking-problemdetector-config
           mountPath: /etc/shoot-networking-problemdetector
           readOnly: true
-        {{- if .Values.egressFilter.oauth2Secret }}
-        - name: shoot-networking-problemdetector-oauth
-          mountPath: /etc/shoot-networking-problemdetector/oauth2
-          readOnly: true
-        {{- end }}
         {{- if .Values.imageVectorOverwrite }}
         - name: extension-imagevector-overwrite
           mountPath: /charts_overwrite/
@@ -113,11 +102,6 @@ spec:
           items:
             - key: config.yaml
               path: config.yaml
-      {{- if .Values.egressFilter.oauth2Secret }}
-      - name: shoot-networking-problemdetector-oauth
-        secret:
-          secretName: extension-shoot-networking-problemdetector.oauth2
-      {{- end }}
       {{- if .Values.imageVectorOverwrite }}
       - name: extension-imagevector-overwrite
         configMap:

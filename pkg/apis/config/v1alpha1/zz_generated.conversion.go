@@ -74,6 +74,8 @@ func Convert_config_Configuration_To_v1alpha1_Configuration(in *config.Configura
 
 func autoConvert_v1alpha1_NetworkProblemDetector_To_config_NetworkProblemDetector(in *NetworkProblemDetector, out *config.NetworkProblemDetector, s conversion.Scope) error {
 	out.DefaultPeriod = (*v1.Duration)(unsafe.Pointer(in.DefaultPeriod))
+	out.PSPDisabled = (*bool)(unsafe.Pointer(in.PSPDisabled))
+	out.PingEnabled = (*bool)(unsafe.Pointer(in.PingEnabled))
 	return nil
 }
 
@@ -84,6 +86,8 @@ func Convert_v1alpha1_NetworkProblemDetector_To_config_NetworkProblemDetector(in
 
 func autoConvert_config_NetworkProblemDetector_To_v1alpha1_NetworkProblemDetector(in *config.NetworkProblemDetector, out *NetworkProblemDetector, s conversion.Scope) error {
 	out.DefaultPeriod = (*v1.Duration)(unsafe.Pointer(in.DefaultPeriod))
+	out.PSPDisabled = (*bool)(unsafe.Pointer(in.PSPDisabled))
+	out.PingEnabled = (*bool)(unsafe.Pointer(in.PingEnabled))
 	return nil
 }
 

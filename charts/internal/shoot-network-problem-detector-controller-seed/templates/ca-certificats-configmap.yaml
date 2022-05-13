@@ -1,0 +1,15 @@
+---
+{{- if .Values.configuration.caCertificates }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "network-problem-detector-controller.fullname" . }}-ca-certificates
+  namespace: {{ .Release.Namespace }}
+  labels:
+    helm.sh/chart: {{ include "network-problem-detector-controller.chart" . }}
+    app.kubernetes.io/name: {{ include "network-problem-detector-controller.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+data:
+  ca-certificates.crt: {{- toYaml .Values.configuration.caCertificates | indent 2 }}
+{{- end}}
