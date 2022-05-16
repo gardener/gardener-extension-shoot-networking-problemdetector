@@ -18,6 +18,7 @@ import (
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"github.com/gardener/gardener/extensions/pkg/util"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
+	resourcesv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 	"github.com/gardener/gardener/pkg/chartrenderer"
 	"github.com/gardener/gardener/pkg/client/kubernetes"
 	"github.com/gardener/gardener/pkg/extensions"
@@ -118,7 +119,7 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 		}
 	}
 
-	shootResources, err := getShootAgentResources(defaultPeriod, pingEnabled, pspEnabled)
+	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, pspEnabled)
 	if err != nil {
 		return err
 	}
@@ -238,7 +239,7 @@ func (a *actuator) InjectScheme(scheme *runtime.Scheme) error {
 	return nil
 }
 
-func getShootAgentResources(defaultPeriod time.Duration, pingEnabled, pspEnabled bool) (map[string][]byte, error) {
+func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled, pspEnabled bool) (map[string][]byte, error) {
 	shootRegistry := managedresources.NewRegistry(kubernetes.ShootScheme, kubernetes.ShootCodec, kubernetes.ShootSerializer)
 
 	image, err := imagevector.ImageVector().FindImage(constants.AgentImageName)
@@ -262,9 +263,35 @@ func getShootAgentResources(defaultPeriod time.Duration, pingEnabled, pspEnabled
 		objects = append(objects, obj.(client.Object))
 	}
 
+	// clusterConfig is updated by nwpd controller later, but it is created here
+	clusterConfig, err := deploy.BuildClusterConfig(nil, nil, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return nil, err
+	}
+	clusterCM, err := deploy.BuildClusterConfigMap(clusterConfig)
+	addIgnoreAnnotation(clusterCM) // don't update
+	objects = append(objects, clusterCM)
+
+	agentConfig, err := deployConfig.BuildAgentConfig()
+	if err != nil {
+		return nil, err
+	}
+	agentCM, err := deploy.BuildAgentConfigMap(agentConfig)
+	objects = append(objects, agentCM)
+
 	shootResources, err := shootRegistry.AddAllAndSerialize(objects...)
 	if err != nil {
 		return nil, err
 	}
 	return shootResources, nil
+}
+
+func addIgnoreAnnotation(cm *corev1.ConfigMap) {
+	if cm.Annotations == nil {
+		cm.Annotations = map[string]string{}
+	}
+	cm.Annotations[resourcesv1alpha1.Ignore] = "true"
 }

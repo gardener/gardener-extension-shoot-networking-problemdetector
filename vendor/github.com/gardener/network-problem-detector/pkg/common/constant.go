@@ -7,10 +7,18 @@ package common
 const (
 	// 	MDNSServiceNodeNetAgent is the mDNS service name of the agent running on the host network.
 	MDNSServiceNodeNetAgent = "network-problem-detector-host-node._tcp"
+	// NamespaceDefault is the default namespace
+	NamespaceDefault = "default"
 	// NamespaceKubeSystem is the kube-system namespace
 	NamespaceKubeSystem = "kube-system"
+	// NameKubernetes is the kubernetes service name
+	NameKubernetes = "kubernetes"
+	// NameGardenerShootInfo is the name of the shoot info config map from Gardener
+	NameGardenerShootInfo = "shoot-info"
 	// AgentConfigFilename is the name of the config file
 	AgentConfigFilename = "agent-config.yaml"
+	// ClusterConfigFilename is the name of the config file
+	ClusterConfigFilename = "cluster-config.yaml"
 	// EnvNodeName is the env variable to get the node name in an agent pod
 	EnvNodeName = "NODE_NAME"
 	// EnvNodeIP is the env variable to get the node ip in an agent pod
@@ -23,6 +31,8 @@ const (
 	ApplicationName = "network-problem-detector"
 	// NameAgentConfigMap name of the config map for the agents
 	NameAgentConfigMap = ApplicationName + "-config"
+	// NameClusterConfigMap name of the config map for the agents containing current nodes and agent pods
+	NameClusterConfigMap = ApplicationName + "-cluster-config"
 	// NameDaemonSetAgentNodeNet name of the daemon set running in the node network
 	NameDaemonSetAgentNodeNet = ApplicationName + "-host"
 	// NameDaemonSetAgentPodNet name of the daemon set running in the pod network

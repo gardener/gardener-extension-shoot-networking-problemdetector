@@ -5,42 +5,22 @@
 package deploy
 
 import (
-	"context"
 	"fmt"
 	"net"
+	"sort"
+	"strings"
 
 	"github.com/gardener/network-problem-detector/pkg/common"
 	"github.com/gardener/network-problem-detector/pkg/common/config"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 )
 
-func GetAPIServerEndpoint(clientset *kubernetes.Clientset) (*config.Endpoint, error) {
-	ctx := context.Background()
-	shootInfo, err := clientset.CoreV1().ConfigMaps(common.NamespaceKubeSystem).Get(ctx, "shoot-info", metav1.GetOptions{})
-	if err != nil {
-		return nil, fmt.Errorf("error getting configmap %s/shoot-info", common.NamespaceKubeSystem)
+func BuildClusterConfig(nodes []*corev1.Node, agentPods []*corev1.Pod,
+	internalKubeAPIServer, kubeAPIServer *config.Endpoint) (*config.ClusterConfig, error) {
+	clusterConfig := &config.ClusterConfig{
+		InternalKubeAPIServer: internalKubeAPIServer,
+		KubeAPIServer:         kubeAPIServer,
 	}
-
-	domain, ok := shootInfo.Data["domain"]
-	if !ok {
-		return nil, fmt.Errorf("missing 'domain' key in configmap %s/shoot-info", common.NamespaceKubeSystem)
-	}
-	apiServer := "api." + domain
-	ips, err := net.LookupIP(apiServer)
-	if err != nil {
-		return nil, fmt.Errorf("error looking up shoot apiserver %s: %s", apiServer, err)
-	}
-	return &config.Endpoint{
-		Hostname: apiServer,
-		IP:       ips[0].String(),
-		Port:     443,
-	}, nil
-}
-
-func BuildClusterConfig(nodes []*corev1.Node, agentPods []*corev1.Pod) (config.ClusterConfig, error) {
-	clusterConfig := config.ClusterConfig{}
 
 	for _, n := range nodes {
 		hostname := ""
@@ -71,5 +51,33 @@ func BuildClusterConfig(nodes []*corev1.Node, agentPods []*corev1.Pod) (config.C
 		})
 	}
 
+	sort.Slice(clusterConfig.Nodes, func(i, j int) bool {
+		return strings.Compare(clusterConfig.Nodes[i].Hostname, clusterConfig.Nodes[j].Hostname) < 0
+	})
+	sort.Slice(clusterConfig.PodEndpoints, func(i, j int) bool {
+		cmp := strings.Compare(clusterConfig.PodEndpoints[i].Nodename, clusterConfig.PodEndpoints[j].Nodename)
+		if cmp == 0 {
+			cmp = strings.Compare(clusterConfig.PodEndpoints[i].Podname, clusterConfig.PodEndpoints[j].Podname)
+		}
+		return cmp < 0
+	})
+
 	return clusterConfig, nil
+}
+
+func GetAPIServerEndpointFromShootInfo(shootInfo *corev1.ConfigMap) (*config.Endpoint, error) {
+	domain, ok := shootInfo.Data["domain"]
+	if !ok {
+		return nil, fmt.Errorf("missing 'domain' key in configmap %s/%s", common.NamespaceKubeSystem, common.NameGardenerShootInfo)
+	}
+	apiServer := "api." + domain
+	ips, err := net.LookupIP(apiServer)
+	if err != nil {
+		return nil, fmt.Errorf("error looking up shoot apiserver %s: %s", apiServer, err)
+	}
+	return &config.Endpoint{
+		Hostname: apiServer,
+		IP:       ips[0].String(),
+		Port:     443,
+	}, nil
 }

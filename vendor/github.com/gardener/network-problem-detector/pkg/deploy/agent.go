@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/spf13/pflag"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
@@ -16,8 +17,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/pointer"
+	"sigs.k8s.io/yaml"
 
 	"github.com/gardener/network-problem-detector/pkg/common"
+	"github.com/gardener/network-problem-detector/pkg/common/config"
 )
 
 // AgentDeployConfig contains configuration for deploying the nwpd agent daemonset
@@ -30,6 +33,8 @@ type AgentDeployConfig struct {
 	PingEnabled bool
 	// PodSecurityPolicyEnabled if psp should be deployed
 	PodSecurityPolicyEnabled bool
+	// IgnoreAPIServerEndpoint if the check of the API server endpoint should be ignored
+	IgnoreAPIServerEndpoint bool
 }
 
 // DeployNetworkProblemDetectorAgent returns K8s resources to be created.
@@ -50,7 +55,7 @@ func DeployNetworkProblemDetectorAgent(config *AgentDeployConfig) ([]Object, err
 			return nil, err
 		}
 		objects = append(objects, svc)
-		ds, err := config.buildDaemonSet(common.NameAgentConfigMap, serviceAccountName, hostnetwork)
+		ds, err := config.buildDaemonSet(serviceAccountName, hostnetwork)
 		if err != nil {
 			return nil, err
 		}
@@ -58,6 +63,17 @@ func DeployNetworkProblemDetectorAgent(config *AgentDeployConfig) ([]Object, err
 	}
 
 	return objects, nil
+}
+
+func (ac *AgentDeployConfig) AddImageFlag(flags *pflag.FlagSet) {
+	flags.StringVar(&ac.Image, "image", defaultImage, "the nwpd container image to use.")
+}
+
+func (ac *AgentDeployConfig) AddOptionFlags(flags *pflag.FlagSet) {
+	flags.DurationVar(&ac.DefaultPeriod, "default-period", 10*time.Second, "default period for jobs.")
+	flags.BoolVar(&ac.PingEnabled, "enable-ping", false, "if ICMP pings should be used in addition to TCP connection checks")
+	flags.BoolVar(&ac.PodSecurityPolicyEnabled, "enable-psp", false, "if pod security policy should be deployed")
+	flags.BoolVar(&ac.IgnoreAPIServerEndpoint, "ignore-gardener-kube-api-server", false, "if true, does not try to lookup kube api-server of Gardener control plane")
 }
 
 func (ac *AgentDeployConfig) buildService(hostnetwork bool) (*corev1.Service, error) {
@@ -115,7 +131,7 @@ func (ac *AgentDeployConfig) getNetworkConfig(hostnetwork bool) (name string, po
 	return
 }
 
-func (ac *AgentDeployConfig) buildDaemonSet(nameConfigMap, serviceAccountName string, hostNetwork bool) (*appsv1.DaemonSet, error) {
+func (ac *AgentDeployConfig) buildDaemonSet(serviceAccountName string, hostNetwork bool) (*appsv1.DaemonSet, error) {
 	var (
 		requestCPU, _          = resource.ParseQuantity("10m")
 		limitCPU, _            = resource.ParseQuantity("50m")
@@ -179,7 +195,13 @@ func (ac *AgentDeployConfig) buildDaemonSet(nameConfigMap, serviceAccountName st
 						Name:            name,
 						Image:           ac.Image,
 						ImagePullPolicy: corev1.PullIfNotPresent,
-						Command:         []string{"/nwpdcli", "run-agent", fmt.Sprintf("--hostNetwork=%t", hostNetwork), "--config", "/config/" + common.AgentConfigFilename},
+						Command: []string{
+							"/nwpdcli",
+							"run-agent",
+							fmt.Sprintf("--hostNetwork=%t", hostNetwork),
+							"--config=/config/agent/" + common.AgentConfigFilename,
+							"--cluster-config=/config/cluster/" + common.ClusterConfigFilename,
+						},
 						Env: []corev1.EnvVar{
 							{
 								Name: common.EnvNodeName,
@@ -238,9 +260,14 @@ func (ac *AgentDeployConfig) buildDaemonSet(nameConfigMap, serviceAccountName st
 								MountPath: common.PathOutputDir,
 							},
 							{
-								Name:      "config",
+								Name:      "agent-config",
 								ReadOnly:  true,
-								MountPath: "/config",
+								MountPath: "/config/agent",
+							},
+							{
+								Name:      "cluster-config",
+								ReadOnly:  true,
+								MountPath: "/config/cluster",
 							},
 						},
 					}},
@@ -255,14 +282,29 @@ func (ac *AgentDeployConfig) buildDaemonSet(nameConfigMap, serviceAccountName st
 							},
 						},
 						{
-							Name: "config",
+							Name: "agent-config",
 							VolumeSource: corev1.VolumeSource{
 								ConfigMap: &corev1.ConfigMapVolumeSource{
-									LocalObjectReference: corev1.LocalObjectReference{Name: nameConfigMap},
+									LocalObjectReference: corev1.LocalObjectReference{Name: common.NameAgentConfigMap},
 									Items: []corev1.KeyToPath{
 										{
 											Key:  common.AgentConfigFilename,
 											Path: common.AgentConfigFilename,
+										},
+									},
+									DefaultMode: &defaultMode,
+								},
+							},
+						},
+						{
+							Name: "cluster-config",
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{Name: common.NameClusterConfigMap},
+									Items: []corev1.KeyToPath{
+										{
+											Key:  common.ClusterConfigFilename,
+											Path: common.ClusterConfigFilename,
 										},
 									},
 									DefaultMode: &defaultMode,
@@ -360,6 +402,12 @@ func (ac *AgentDeployConfig) buildControllerDeployment() (*appsv1.Deployment, *r
 				Verbs:     []string{"get", "list", "watch"},
 				Resources: []string{"nodes"},
 			},
+			{
+				APIGroups:     []string{""},
+				Verbs:         []string{"get"},
+				Resources:     []string{"services"},
+				ResourceNames: []string{common.NameKubernetes},
+			},
 		},
 	}
 	clusterRoleBinding := &rbacv1.ClusterRoleBinding{
@@ -394,12 +442,18 @@ func (ac *AgentDeployConfig) buildControllerDeployment() (*appsv1.Deployment, *r
 				APIGroups:     []string{""},
 				Verbs:         []string{"get", "update", "patch"},
 				Resources:     []string{"configmaps"},
-				ResourceNames: []string{common.NameAgentConfigMap},
+				ResourceNames: []string{common.NameAgentConfigMap, common.NameClusterConfigMap},
 			},
 			{
 				APIGroups: []string{""},
 				Verbs:     []string{"create"},
 				Resources: []string{"configmaps"},
+			},
+			{
+				APIGroups:     []string{""},
+				Verbs:         []string{"get"},
+				Resources:     []string{"configmaps"},
+				ResourceNames: []string{common.NameGardenerShootInfo},
 			},
 		},
 	}
@@ -514,4 +568,118 @@ func (ac *AgentDeployConfig) buildPodSecurityPolicy(serviceAccountName string) (
 	}
 
 	return clusterRole, clusterRoleBinding, serviceAccount, psp, nil
+}
+
+func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
+	cfg := config.AgentConfig{
+		OutputDir:         common.PathOutputDir,
+		RetentionHours:    4,
+		LogDroppingFactor: 0.9,
+		NodeNetwork: &config.NetworkConfig{
+			DataFilePrefix:  common.NameDaemonSetAgentNodeNet,
+			GRPCPort:        common.NodeNetPodGRPCPort,
+			HttpPort:        common.NodeNetPodHttpPort,
+			StartMDNSServer: true,
+			DefaultPeriod:   ac.DefaultPeriod,
+			Jobs: []config.Job{
+				{
+					JobID: "tcp-n2api-int",
+					Args:  []string{"checkTCPPort", "--endpoint-internal-kube-apiserver"},
+				},
+				{
+					JobID: "tcp-n2kubeproxy",
+					Args:  []string{"checkTCPPort", "--node-port", "10249"},
+				},
+				{
+					JobID: "mdns-n2n",
+					Args:  []string{"discoverMDNS", "--period", "1m"},
+				},
+				{
+					JobID: "tcp-n2p",
+					Args:  []string{"checkTCPPort", "--endpoints-of-pod-ds"},
+				},
+			},
+		},
+		PodNetwork: &config.NetworkConfig{
+			DataFilePrefix: common.NameDaemonSetAgentPodNet,
+			DefaultPeriod:  ac.DefaultPeriod,
+			GRPCPort:       common.PodNetPodGRPCPort,
+			HttpPort:       common.PodNetPodHttpPort,
+			Jobs: []config.Job{
+				{
+					JobID: "tcp-p2api-int",
+					Args:  []string{"checkTCPPort", "--endpoint-internal-kube-apiserver"},
+				},
+				{
+					JobID: "tcp-p2kubeproxy",
+					Args:  []string{"checkTCPPort", "--node-port", "10249"},
+				},
+				{
+					JobID: "tcp-p2p",
+					Args:  []string{"checkTCPPort", "--endpoints-of-pod-ds"},
+				},
+			},
+		},
+	}
+
+	if !ac.IgnoreAPIServerEndpoint {
+		cfg.NodeNetwork.Jobs = append(cfg.NodeNetwork.Jobs,
+			config.Job{
+				JobID: "tcp-n2api-ext",
+				Args:  []string{"checkTCPPort", "--endpoint-external-kube-apiserver"},
+			})
+		cfg.PodNetwork.Jobs = append(cfg.PodNetwork.Jobs,
+			config.Job{
+				JobID: "tcp-p2api-ext",
+				Args:  []string{"checkTCPPort", "--endpoint-external-kube-apiserver"},
+			})
+	}
+	if ac.PingEnabled {
+		cfg.NodeNetwork.Jobs = append(cfg.NodeNetwork.Jobs,
+			config.Job{
+				JobID: "ping-n2n",
+				Args:  []string{"pingHost"},
+			})
+		cfg.PodNetwork.Jobs = append(cfg.PodNetwork.Jobs,
+			config.Job{
+				JobID: "ping-p2n",
+				Args:  []string{"pingHost"},
+			})
+	}
+
+	return &cfg, nil
+}
+
+func BuildAgentConfigMap(agentConfig *config.AgentConfig) (*corev1.ConfigMap, error) {
+	cfgBytes, err := yaml.Marshal(agentConfig)
+	if err != nil {
+		return nil, err
+	}
+	cm := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      common.NameAgentConfigMap,
+			Namespace: common.NamespaceKubeSystem,
+		},
+		Data: map[string]string{
+			common.AgentConfigFilename: string(cfgBytes),
+		},
+	}
+	return cm, nil
+}
+
+func BuildClusterConfigMap(clusterConfig *config.ClusterConfig) (*corev1.ConfigMap, error) {
+	cfgBytes, err := yaml.Marshal(clusterConfig)
+	if err != nil {
+		return nil, err
+	}
+	cm := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      common.NameClusterConfigMap,
+			Namespace: common.NamespaceKubeSystem,
+		},
+		Data: map[string]string{
+			common.ClusterConfigFilename: string(cfgBytes),
+		},
+	}
+	return cm, nil
 }

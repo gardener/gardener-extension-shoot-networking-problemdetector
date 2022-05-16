@@ -14,7 +14,15 @@ rules:
   verbs:
   - get
   - list
-  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  resourceNames:
+  - kubernetes
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -43,17 +51,20 @@ rules:
     resources:
       - configmaps
     verbs:
-      - create
+      - get
+      - watch
+      - update
+      - patch
+    resourceNames:
+      - network-problem-detector-cluster-config
   - apiGroups:
       - ""
     resources:
       - configmaps
     verbs:
       - get
-      - watch
-      - update
     resourceNames:
-      - network-problem-detector-config
+      - shoot-info
   - apiGroups:
       - ""
     resources:

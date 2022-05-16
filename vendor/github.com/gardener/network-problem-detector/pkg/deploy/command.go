@@ -8,32 +8,23 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/yaml"
 
 	"github.com/gardener/network-problem-detector/pkg/common"
 	"github.com/gardener/network-problem-detector/pkg/common/config"
 )
 
-var defaultImage = "eu.gcr.io/gardener-project/test/network-problem-detector:v0.1.0-dev-220513e"
+var defaultImage = "eu.gcr.io/gardener-project/test/network-problem-detector:v0.1.0-dev-220516m"
 
 type deployCommand struct {
 	common.ClientsetBase
-	image                   string
-	delete                  bool
-	pingEnabled             bool
-	pspEnabled              bool
-	ignoreAPIServerEndpoint bool
-	defaultPeriod           time.Duration
-	nodeList                *corev1.NodeList
-	podList                 *corev1.PodList
-	apiServer               *config.Endpoint
+	delete            bool
+	agentDeployConfig AgentDeployConfig
 }
 
 func CreateDeployCmd() *cobra.Command {
@@ -44,11 +35,8 @@ func CreateDeployCmd() *cobra.Command {
 		Long:  `deploy agent daemon sets and controller deployment`,
 	}
 	dc.AddKubeConfigFlag(cmd.PersistentFlags())
-	cmd.PersistentFlags().StringVar(&dc.image, "image", defaultImage, "the nwpd container image to use.")
-	cmd.PersistentFlags().DurationVar(&dc.defaultPeriod, "default-period", 10*time.Second, "default period for jobs.")
-	cmd.PersistentFlags().BoolVar(&dc.pingEnabled, "enable-ping", false, "if ICMP pings should be used in addition to TCP connection checks")
-	cmd.PersistentFlags().BoolVar(&dc.pspEnabled, "enable-psp", false, "if pod security policy should be deployed")
-	cmd.PersistentFlags().BoolVar(&dc.ignoreAPIServerEndpoint, "ignore-gardener-kube-api-server", false, "if true, does not try to lookup kube api-server of Gardener control plane")
+	dc.agentDeployConfig.AddImageFlag(cmd.PersistentFlags())
+	dc.agentDeployConfig.AddOptionFlags(cmd.PersistentFlags())
 
 	agentCmd := &cobra.Command{
 		Use:     "agent",
@@ -83,32 +71,6 @@ func (dc *deployCommand) setup() error {
 	if err := dc.SetupClientSet(); err != nil {
 		return err
 	}
-	if !dc.delete {
-		if err := dc.setupShootInfo(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (dc *deployCommand) setupShootInfo() error {
-	var err error
-	ctx := context.Background()
-	dc.nodeList, err = dc.Clientset.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
-	if err != nil {
-		return fmt.Errorf("error listing nodes", err)
-	}
-	dc.podList, err = dc.Clientset.CoreV1().Pods(common.NamespaceKubeSystem).List(ctx, metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("%s=%s", common.LabelKeyK8sApp, common.NameDaemonSetAgentPodNet),
-	})
-	if err != nil {
-		return fmt.Errorf("error listing pods", err)
-	}
-
-	dc.apiServer, err = GetAPIServerEndpoint(dc.Clientset)
-	if err != nil && !dc.ignoreAPIServerEndpoint {
-		return fmt.Errorf("%s\nIf this Kubernetes cluster is no Gardener shoot, try with `--ignore-gardener-kube-api-server`")
-	}
 	return nil
 }
 
@@ -118,7 +80,7 @@ func (dc *deployCommand) printDefaultConfig(cmd *cobra.Command, args []string) e
 		return err
 	}
 
-	cfg, err := dc.buildDefaultConfig()
+	cfg, err := dc.agentDeployConfig.BuildAgentConfig()
 	if err != nil {
 		return err
 	}
@@ -133,11 +95,11 @@ func (dc *deployCommand) printDefaultConfig(cmd *cobra.Command, args []string) e
 
 func (dc *deployCommand) deployAgentAllDaemonsets(cmd *cobra.Command, args []string) error {
 	log := logrus.WithField("cmd", "deploy-agent")
-	err := dc.deployAgent(log, false, dc.buildCommonConfigMap)
+	err := dc.deployAgent(log, false, dc.buildAgentConfigMap, dc.buildClusterConfigMap)
 	if err != nil {
 		return err
 	}
-	return dc.deployAgent(log, true, dc.buildCommonConfigMap)
+	return dc.deployAgent(log, true, dc.buildAgentConfigMap, dc.buildClusterConfigMap)
 }
 
 func (dc *deployCommand) deployAgentControllerDeployment(cmd *cobra.Command, args []string) error {
@@ -148,7 +110,7 @@ func (dc *deployCommand) deployAgentControllerDeployment(cmd *cobra.Command, arg
 		return err
 	}
 
-	ac := dc.buildAgentDeployConfig()
+	ac := dc.agentDeployConfig
 	ctx := context.Background()
 	deployment, cr, crb, role, rolebinding, sa, err := ac.buildControllerDeployment()
 	if err != nil {
@@ -180,17 +142,9 @@ func (dc *deployCommand) deleteAgentControllerDeployment(log logrus.FieldLogger)
 	return nil
 }
 
-func (dc *deployCommand) buildAgentDeployConfig() *AgentDeployConfig {
-	return &AgentDeployConfig{
-		Image:                    dc.image,
-		DefaultPeriod:            dc.defaultPeriod,
-		PingEnabled:              dc.pingEnabled,
-		PodSecurityPolicyEnabled: dc.pspEnabled,
-	}
-}
-
-func (dc *deployCommand) deployAgent(log logrus.FieldLogger, hostnetwork bool, buildConfigMap buildObject[*corev1.ConfigMap]) error {
-	ac := dc.buildAgentDeployConfig()
+func (dc *deployCommand) deployAgent(log logrus.FieldLogger, hostnetwork bool,
+	buildAgentConfigMap, buildClusterConfigMap buildObject[*corev1.ConfigMap]) error {
+	ac := dc.agentDeployConfig
 	name, _, _ := ac.getNetworkConfig(hostnetwork)
 
 	err := dc.setup()
@@ -199,14 +153,18 @@ func (dc *deployCommand) deployAgent(log logrus.FieldLogger, hostnetwork bool, b
 	}
 
 	if dc.delete {
-		return dc.deleteDaemonSet(log, name, common.NameAgentConfigMap)
+		return dc.deleteDaemonSet(log, name)
 	}
 
 	svc, err := ac.buildService(hostnetwork)
 	if err != nil {
 		return fmt.Errorf("error building service[%t]: %s", hostnetwork, err)
 	}
-	cm, err := buildConfigMap()
+	acm, err := buildAgentConfigMap()
+	if err != nil {
+		return fmt.Errorf("error building config map: %s", err)
+	}
+	ccm, err := buildClusterConfigMap()
 	if err != nil {
 		return fmt.Errorf("error building config map: %s", err)
 	}
@@ -228,11 +186,11 @@ func (dc *deployCommand) deployAgent(log logrus.FieldLogger, hostnetwork bool, b
 		}
 	}
 
-	ds, err := ac.buildDaemonSet(cm.GetName(), serviceAccountName, hostnetwork)
+	ds, err := ac.buildDaemonSet(serviceAccountName, hostnetwork)
 	if err != nil {
 		return fmt.Errorf("error building daemon set: %s", err)
 	}
-	for _, obj := range []Object{svc, cm, ds} {
+	for _, obj := range []Object{svc, acm, ccm, ds} {
 		_, err = genericCreateOrUpdate(ctx, dc.Clientset, obj)
 		if err != nil {
 			return err
@@ -243,18 +201,22 @@ func (dc *deployCommand) deployAgent(log logrus.FieldLogger, hostnetwork bool, b
 	return nil
 }
 
-func (dc *deployCommand) deleteDaemonSet(log logrus.FieldLogger, name, configMapName string) error {
+func (dc *deployCommand) deleteDaemonSet(log logrus.FieldLogger, name string) error {
 	ctx := context.Background()
 	err1 := dc.Clientset.AppsV1().DaemonSets(common.NamespaceKubeSystem).Delete(ctx, name, metav1.DeleteOptions{})
 	if err1 == nil {
 		log.Infof("daemonset %s/%s deleted", common.NamespaceKubeSystem, name)
 	}
-	err2 := dc.Clientset.CoreV1().ConfigMaps(common.NamespaceKubeSystem).Delete(ctx, configMapName, metav1.DeleteOptions{})
+	err2 := dc.Clientset.CoreV1().ConfigMaps(common.NamespaceKubeSystem).Delete(ctx, common.NameAgentConfigMap, metav1.DeleteOptions{})
 	if err2 == nil {
-		log.Infof("configmap %s/%s deleted", common.NamespaceKubeSystem, configMapName)
+		log.Infof("configmap %s/%s deleted", common.NamespaceKubeSystem, common.NameAgentConfigMap)
 	}
-	err3 := dc.Clientset.CoreV1().Services(common.NamespaceKubeSystem).Delete(ctx, name, metav1.DeleteOptions{})
+	err3 := dc.Clientset.CoreV1().ConfigMaps(common.NamespaceKubeSystem).Delete(ctx, common.NameClusterConfigMap, metav1.DeleteOptions{})
 	if err3 == nil {
+		log.Infof("configmap %s/%s deleted", common.NamespaceKubeSystem, common.NameClusterConfigMap)
+	}
+	err4 := dc.Clientset.CoreV1().Services(common.NamespaceKubeSystem).Delete(ctx, name, metav1.DeleteOptions{})
+	if err4 == nil {
 		log.Infof("service %s/%s deleted", common.NamespaceKubeSystem, name)
 	}
 	if err1 != nil && !errors.IsNotFound(err1) {
@@ -266,18 +228,17 @@ func (dc *deployCommand) deleteDaemonSet(log logrus.FieldLogger, name, configMap
 	if err3 != nil && !errors.IsNotFound(err3) {
 		return err3
 	}
-
-	if dc.pspEnabled {
-		return dc.deletePodSecurityPolicy(log)
+	if err4 != nil && !errors.IsNotFound(err4) {
+		return err4
 	}
-	return nil
+
+	return dc.deletePodSecurityPolicy(log)
 }
 
 func (dc *deployCommand) deletePodSecurityPolicy(log logrus.FieldLogger) error {
-	ac := dc.buildAgentDeployConfig()
 	ctx := context.Background()
 	serviceAccountName := common.ApplicationName
-	cr, crb, sa, psp, err := ac.buildPodSecurityPolicy(serviceAccountName)
+	cr, crb, sa, psp, err := dc.agentDeployConfig.buildPodSecurityPolicy(serviceAccountName)
 	if err != nil {
 		return err
 	}
@@ -289,189 +250,85 @@ func (dc *deployCommand) deletePodSecurityPolicy(log logrus.FieldLogger) error {
 	return nil
 }
 
-func (dc *deployCommand) buildDefaultConfig() (*config.AgentConfig, error) {
-	cfg := config.AgentConfig{
-		OutputDir:         common.PathOutputDir,
-		RetentionHours:    4,
-		LogDroppingFactor: 0.9,
-		NodeNetwork: &config.NetworkConfig{
-			DataFilePrefix:  common.NameDaemonSetAgentNodeNet,
-			GRPCPort:        common.NodeNetPodGRPCPort,
-			HttpPort:        common.NodeNetPodHttpPort,
-			StartMDNSServer: true,
-			DefaultPeriod:   dc.defaultPeriod,
-			Jobs: []config.Job{
-				{
-					JobID: "tcp-n2api-ext",
-					Args:  []string{"checkTCPPort", "--endpoints", fmt.Sprintf("%s:%s:%d", dc.apiServer.Hostname, dc.apiServer.IP, dc.apiServer.Port)},
-				},
-				{
-					JobID: "tcp-n2kubeproxy",
-					Args:  []string{"checkTCPPort", "--node-port", "10249"},
-				},
-				{
-					JobID: "mdns-n2n",
-					Args:  []string{"discoverMDNS", "--period", "1m"},
-				},
-				{
-					JobID: "tcp-n2p",
-					Args:  []string{"checkTCPPort", "--endpoints-of-pod-ds"},
-				},
-			},
-		},
-		PodNetwork: &config.NetworkConfig{
-			DataFilePrefix: common.NameDaemonSetAgentPodNet,
-			DefaultPeriod:  dc.defaultPeriod,
-			GRPCPort:       common.PodNetPodGRPCPort,
-			HttpPort:       common.PodNetPodHttpPort,
-			Jobs: []config.Job{
-				{
-					JobID: "tcp-p2api-ext",
-					Args:  []string{"checkTCPPort", "--endpoints", fmt.Sprintf("%s:%s:%d", dc.apiServer.Hostname, dc.apiServer.IP, dc.apiServer.Port)},
-				},
-				{
-					JobID: "tcp-p2api-int",
-					Args:  []string{"checkTCPPort", "--endpoints", "kubernetes:100.64.0.1:443"},
-				},
-				{
-					JobID: "tcp-p2kubeproxy",
-					Args:  []string{"checkTCPPort", "--node-port", "10249"},
-				},
-				{
-					JobID: "tcp-p2p",
-					Args:  []string{"checkTCPPort", "--endpoints-of-pod-ds"},
-				},
-			},
-		},
-	}
-
-	podNetServiceClusterIP, err := dc.getPodNetServiceClusterIP()
+func (dc *deployCommand) buildAgentConfigMap() (*corev1.ConfigMap, error) {
+	agentConfig, err := dc.agentDeployConfig.BuildAgentConfig()
 	if err != nil {
 		return nil, err
 	}
-	cfg.NodeNetwork.Jobs = append(cfg.NodeNetwork.Jobs, config.Job{
-		JobID: "tcp-n2svc",
-		Args:  []string{"checkTCPPort", "--endpoints", fmt.Sprintf("nwpd-agent-pod-net:%s:80", podNetServiceClusterIP)},
-	})
-	cfg.PodNetwork.Jobs = append(cfg.PodNetwork.Jobs, config.Job{
-		JobID: "tcp-p2svc",
-		Args:  []string{"checkTCPPort", "--endpoints", fmt.Sprintf("nwpd-agent-pod-net:%s:80", podNetServiceClusterIP)},
-	})
-
-	if dc.pingEnabled {
-		cfg.NodeNetwork.Jobs = append(cfg.NodeNetwork.Jobs,
-			config.Job{
-				JobID: "ping-n2n",
-				Args:  []string{"pingHost"},
-			},
-			config.Job{
-				JobID: "ping-n2api-ext",
-				Args:  []string{"pingHost", "--hosts", dc.apiServer.Hostname + ":" + dc.apiServer.IP},
-			})
-		cfg.PodNetwork.Jobs = append(cfg.NodeNetwork.Jobs,
-			config.Job{
-				JobID: "ping-p2n",
-				Args:  []string{"pingHost"},
-			},
-			config.Job{
-				JobID: "ping-p2api-ext",
-				Args:  []string{"pingHost", "--hosts", dc.apiServer.Hostname + ":" + dc.apiServer.IP},
-			})
-	}
-
-	cfg.ClusterConfig, err = dc.buildClusterConfig(dc.nodes(), dc.agentPods())
-	if err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
+	return BuildAgentConfigMap(agentConfig)
 }
 
-func (dc *deployCommand) buildClusterConfig(nodes []*corev1.Node, agentPods []*corev1.Pod) (config.ClusterConfig, error) {
-	clusterConfig := config.ClusterConfig{}
-
-	for _, n := range nodes {
-		hostname := ""
-		ip := ""
-		for _, addr := range n.Status.Addresses {
-			switch addr.Type {
-			case "Hostname":
-				hostname = addr.Address
-			case "InternalIP":
-				ip = addr.Address
-			}
-		}
-		if hostname == "" || ip == "" {
-			return clusterConfig, fmt.Errorf("invalid node: %s", n.Name)
-		}
-		clusterConfig.Nodes = append(clusterConfig.Nodes, config.Node{
-			Hostname:   hostname,
-			InternalIP: ip,
-		})
-	}
-
-	for _, p := range agentPods {
-		clusterConfig.PodEndpoints = append(clusterConfig.PodEndpoints, config.PodEndpoint{
-			Nodename: p.Spec.NodeName,
-			Podname:  p.Name,
-			PodIP:    p.Status.PodIP,
-			Port:     common.PodNetPodGRPCPort,
-		})
-	}
-
-	return clusterConfig, nil
-}
-
-func (dc *deployCommand) buildCommonConfigMap() (*corev1.ConfigMap, error) {
-	cfg, err := dc.buildDefaultConfig()
-	if err != nil {
-		return nil, err
-	}
-	cfgBytes, err := yaml.Marshal(cfg)
-	if err != nil {
-		return nil, err
-	}
-	cm := &corev1.ConfigMap{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      common.NameAgentConfigMap,
-			Namespace: common.NamespaceKubeSystem,
-		},
-		Data: map[string]string{
-			common.AgentConfigFilename: string(cfgBytes),
-		},
-	}
-	return cm, nil
-}
-
-func (dc *deployCommand) getPodNetServiceClusterIP() (string, error) {
+func (dc *deployCommand) buildClusterConfigMap() (*corev1.ConfigMap, error) {
 	ctx := context.Background()
-	svc, err := dc.Clientset.CoreV1().Services(common.NamespaceKubeSystem).Get(ctx, common.NameDaemonSetAgentPodNet, metav1.GetOptions{})
+	svc, err := dc.Clientset.CoreV1().Services(common.NamespaceDefault).Get(ctx, common.NameKubernetes, metav1.GetOptions{})
 	if err != nil {
-		return "", fmt.Errorf("error getting service %s/%s: %s", "getting", common.NamespaceKubeSystem, common.NameDaemonSetAgentPodNet, err)
+		return nil, err
 	}
-	return svc.Spec.ClusterIP, nil
+	internalApiServer := &config.Endpoint{
+		Hostname: common.NameKubernetes,
+		IP:       svc.Spec.ClusterIP,
+		Port:     int(svc.Spec.Ports[0].Port),
+	}
+	var apiServer *config.Endpoint
+	if !dc.agentDeployConfig.IgnoreAPIServerEndpoint {
+		shootInfo, err := dc.Clientset.CoreV1().ConfigMaps(common.NamespaceKubeSystem).Get(ctx, common.NameGardenerShootInfo, metav1.GetOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("error getting configmap %s/%s", common.NamespaceKubeSystem, common.NameGardenerShootInfo)
+		}
+		apiServer, err = GetAPIServerEndpointFromShootInfo(shootInfo)
+		if err != nil {
+			return nil, err
+		}
+	}
+	nodes, err := dc.nodes()
+	if err != nil {
+		return nil, err
+	}
+	agentPods, err := dc.agentPods()
+	if err != nil {
+		return nil, err
+	}
+
+	clusterConfig, err := BuildClusterConfig(nodes, agentPods, internalApiServer, apiServer)
+	if err != nil {
+		return nil, err
+	}
+	return BuildClusterConfigMap(clusterConfig)
 }
 
-func (dc *deployCommand) nodes() []*corev1.Node {
-	if dc.nodeList == nil {
-		return nil
+func (dc *deployCommand) nodes() ([]*corev1.Node, error) {
+	ctx := context.Background()
+	nodeList, err := dc.Clientset.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("error listing nodes", err)
+	}
+	if nodeList == nil {
+		return nil, nil
 	}
 	var nodes []*corev1.Node
-	for _, n := range dc.nodeList.Items {
+	for _, n := range nodeList.Items {
 		item := n
 		nodes = append(nodes, &item)
 	}
-	return nodes
+	return nodes, nil
 }
 
-func (dc *deployCommand) agentPods() []*corev1.Pod {
-	if dc.podList == nil {
-		return nil
+func (dc *deployCommand) agentPods() ([]*corev1.Pod, error) {
+	ctx := context.Background()
+	podList, err := dc.Clientset.CoreV1().Pods(common.NamespaceKubeSystem).List(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("%s=%s", common.LabelKeyK8sApp, common.NameDaemonSetAgentPodNet),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing pods", err)
+	}
+
+	if podList == nil {
+		return nil, nil
 	}
 	var pods []*corev1.Pod
-	for _, p := range dc.podList.Items {
+	for _, p := range podList.Items {
 		item := p
 		pods = append(pods, &item)
 	}
-	return pods
+	return pods, nil
 }
