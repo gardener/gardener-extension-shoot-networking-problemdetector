@@ -6,6 +6,7 @@ package deploy
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 
@@ -19,7 +20,9 @@ import (
 	"github.com/gardener/network-problem-detector/pkg/common/config"
 )
 
-var defaultImage = "eu.gcr.io/gardener-project/test/network-problem-detector:v0.1.0-dev-220516m"
+// DefaultImage is the default image used for deployment
+//go:embed DEFAULT_IMAGE
+var defaultImage string
 
 type deployCommand struct {
 	common.ClientsetBase
@@ -300,7 +303,7 @@ func (dc *deployCommand) nodes() ([]*corev1.Node, error) {
 	ctx := context.Background()
 	nodeList, err := dc.Clientset.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("error listing nodes", err)
+		return nil, fmt.Errorf("error listing nodes: %w", err)
 	}
 	if nodeList == nil {
 		return nil, nil
@@ -319,7 +322,7 @@ func (dc *deployCommand) agentPods() ([]*corev1.Pod, error) {
 		LabelSelector: fmt.Sprintf("%s=%s", common.LabelKeyK8sApp, common.NameDaemonSetAgentPodNet),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error listing pods", err)
+		return nil, fmt.Errorf("error listing pods: %w", err)
 	}
 
 	if podList == nil {
