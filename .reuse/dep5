@@ -13,11 +13,14 @@ Files:
   charts/gardener-extension-shoot-networking-problemdetector/.helmignore
   charts/gardener-extension-shoot-networking-problemdetector/templates/_helpers.tpl
   charts/gardener-extension-shoot-networking-problemdetector/templates/secret-oauth2.yaml
+  charts/internal/*
   CODEOWNERS
   go.mod
   go.sum
+  example/*
   hack/api-reference/config.json
   vendor/modules.txt
+  vendor/github.com/gardener/network-problem-detector/pkg/deploy/DEFAULT_IMAGE
   VERSION
 Copyright: 2022 SAP SE or an SAP affiliate company and Gardener contributors
 License: Apache-2.0
@@ -27,6 +30,7 @@ License: Apache-2.0
 
 Files:
   *.md
+  .docforge/*
   docs/*
 Copyright: 2022 SAP SE or an SAP affiliate company and Gardener contributors
 License: CC-BY-4.0
@@ -112,6 +116,10 @@ Copyright: Copyright (c) 2014 Sam Ghods
 Copyright: Copyright (c) 2012 The Go Authors
 License: MIT and BSD-3-Clause
 
+Files: vendor/github.com/google/pprof/*
+Copyright: Copyright 2014 Google Inc.
+License: Apache-2.0
+
 Files: vendor/github.com/go-logr/logr/*
 Copyright: Copyright 2020 The logr
 License: Apache-2.0
@@ -132,6 +140,10 @@ License: Apache-2.0
 Files: vendor/github.com/go-openapi/swag/*
 Copyright: Copyright 2015 go-swagger
 License: Apache-2.0
+
+Files: vendor/github.com/go-task/slim-sprig/*
+Copyright: Copyright (C) 2013-2020 Masterminds
+License: MIT
 
 Files: vendor/github.com/gobuffalo/flect/*
 Copyright: Copyright (c) 2019 Mark Bates
@@ -252,6 +264,10 @@ License: MIT
 
 Files: vendor/github.com/mitchellh/copystructure/*
 Copyright: Copyright (c) 2014 Mitchell Hashimoto
+License: MIT
+
+Files: vendor/github.com/mitchellh/hashstructure/*
+Copyright: Copyright (c) 2016 Mitchell Hashimoto
 License: MIT
 
 Files: vendor/github.com/mitchellh/mapstructure/*
@@ -554,6 +570,10 @@ License: Apache-2.0
 
 Files: vendor/sigs.k8s.io/controller-tools/*
 Copyright: Copyright 2018 The Kubernetes Authors
+License: Apache-2.0
+
+Files: vendor/sigs.k8s.io/json/*
+Copyright: Copyright 2021 The Kubernetes Authors
 License: Apache-2.0
 
 Files: vendor/sigs.k8s.io/structured-merge-diff/v4/*
