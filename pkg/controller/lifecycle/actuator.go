@@ -262,24 +262,16 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 	for _, obj := range objs {
 		objects = append(objects, obj.(client.Object))
 	}
-
-	// clusterConfig is updated by nwpd controller later, but it is created here
-	clusterConfig, err := deploy.BuildClusterConfig(nil, nil, nil, nil)
+	clusterCM, err := buildDefaultClusterConfigMap()
 	if err != nil {
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
-	clusterCM, err := deploy.BuildClusterConfigMap(clusterConfig)
-	addIgnoreAnnotation(clusterCM) // don't update
 	objects = append(objects, clusterCM)
 
-	agentConfig, err := deployConfig.BuildAgentConfig()
+	agentCM, err := buildDefaultAgentConfigMap(deployConfig)
 	if err != nil {
 		return nil, err
 	}
-	agentCM, err := deploy.BuildAgentConfigMap(agentConfig)
 	objects = append(objects, agentCM)
 
 	shootResources, err := shootRegistry.AddAllAndSerialize(objects...)
@@ -287,6 +279,32 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 		return nil, err
 	}
 	return shootResources, nil
+}
+
+func buildDefaultAgentConfigMap(deployConfig *deploy.AgentDeployConfig) (*corev1.ConfigMap, error) {
+	agentConfig, err := deployConfig.BuildAgentConfig()
+	if err != nil {
+		return nil, err
+	}
+	agentCM, err := deploy.BuildAgentConfigMap(agentConfig)
+	if err != nil {
+		return nil, err
+	}
+	return agentCM, nil
+}
+
+func buildDefaultClusterConfigMap() (*corev1.ConfigMap, error) {
+	// clusterConfig is updated by nwpd controller later, but it is created here
+	clusterConfig, err := deploy.BuildClusterConfig(nil, nil, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	clusterCM, err := deploy.BuildClusterConfigMap(clusterConfig)
+	if err != nil {
+		return nil, err
+	}
+	addIgnoreAnnotation(clusterCM) // don't update
+	return clusterCM, nil
 }
 
 func addIgnoreAnnotation(cm *corev1.ConfigMap) {
