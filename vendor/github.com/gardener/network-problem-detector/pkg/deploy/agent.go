@@ -6,6 +6,7 @@ package deploy
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -66,13 +67,13 @@ func DeployNetworkProblemDetectorAgent(config *AgentDeployConfig) ([]Object, err
 }
 
 func (ac *AgentDeployConfig) AddImageFlag(flags *pflag.FlagSet) {
-	flags.StringVar(&ac.Image, "image", defaultImage, "the nwpd container image to use.")
+	flags.StringVar(&ac.Image, "image", strings.TrimSpace(defaultImage), "the nwpd container image to use.")
 }
 
 func (ac *AgentDeployConfig) AddOptionFlags(flags *pflag.FlagSet) {
 	flags.DurationVar(&ac.DefaultPeriod, "default-period", 10*time.Second, "default period for jobs.")
 	flags.BoolVar(&ac.PingEnabled, "enable-ping", false, "if ICMP pings should be used in addition to TCP connection checks")
-	flags.BoolVar(&ac.PodSecurityPolicyEnabled, "enable-psp", false, "if pod security policy should be deployed")
+	flags.BoolVar(&ac.PodSecurityPolicyEnabled, "enable-psp", true, "if pod security policy should be deployed")
 	flags.BoolVar(&ac.IgnoreAPIServerEndpoint, "ignore-gardener-kube-api-server", false, "if true, does not try to lookup kube api-server of Gardener control plane")
 }
 
@@ -120,9 +121,9 @@ func (ac *AgentDeployConfig) getLabels(name string) map[string]string {
 
 func (ac *AgentDeployConfig) getNetworkConfig(hostnetwork bool) (name string, portGRPC, portMetrics int32) {
 	if hostnetwork {
-		name = common.NameDaemonSetAgentNodeNet
-		portGRPC = common.NodeNetPodGRPCPort
-		portMetrics = common.NodeNetPodHttpPort
+		name = common.NameDaemonSetAgentHostNet
+		portGRPC = common.HostNetPodGRPCPort
+		portMetrics = common.HostNetPodHttpPort
 	} else {
 		name = common.NameDaemonSetAgentPodNet
 		portGRPC = common.PodNetPodGRPCPort
@@ -173,22 +174,22 @@ func (ac *AgentDeployConfig) buildDaemonSet(serviceAccountName string, hostNetwo
 					HostNetwork: hostNetwork,
 					//PriorityClassName:             "system-node-critical",
 					TerminationGracePeriodSeconds: pointer.Int64(0),
-					/*
-						Tolerations: []corev1.Toleration{
-							{
-								Effect:   corev1.TaintEffectNoSchedule,
-								Operator: corev1.TolerationOpExists,
-							},
+					Tolerations: []corev1.Toleration{
+						{
+							Effect:   corev1.TaintEffectNoSchedule,
+							Operator: corev1.TolerationOpExists,
+						},
+						/*
 							{
 								Key:      "CriticalAddonsOnly",
 								Operator: corev1.TolerationOpExists,
 							},
-							{
-								Effect:   corev1.TaintEffectNoExecute,
-								Operator: corev1.TolerationOpExists,
-							},
+						*/
+						{
+							Effect:   corev1.TaintEffectNoExecute,
+							Operator: corev1.TolerationOpExists,
 						},
-					*/
+					},
 					AutomountServiceAccountToken: pointer.Bool(false),
 					ServiceAccountName:           serviceAccountName,
 					Containers: []corev1.Container{{
@@ -358,10 +359,10 @@ func (ac *AgentDeployConfig) buildControllerDeployment() (*appsv1.Deployment, *r
 								Effect:   corev1.TaintEffectNoSchedule,
 								Operator: corev1.TolerationOpExists,
 							},
-							{
-								Key:      "CriticalAddonsOnly",
-								Operator: corev1.TolerationOpExists,
-							},
+								{
+									Key:      "CriticalAddonsOnly",
+									Operator: corev1.TolerationOpExists,
+								},
 							{
 								Effect:   corev1.TaintEffectNoExecute,
 								Operator: corev1.TolerationOpExists,
@@ -384,6 +385,10 @@ func (ac *AgentDeployConfig) buildControllerDeployment() (*appsv1.Deployment, *r
 								corev1.ResourceCPU:    limitCPU,
 								corev1.ResourceMemory: limitMemory,
 							},
+						},
+						SecurityContext: &corev1.SecurityContext{
+							RunAsUser:  pointer.Int64(65534),
+							RunAsGroup: pointer.Int64(65534),
 						},
 					}},
 				},
@@ -486,7 +491,6 @@ func (ac *AgentDeployConfig) buildControllerDeployment() (*appsv1.Deployment, *r
 	return deployment, clusterRole, clusterRoleBinding, role, roleBinding, serviceAccount, nil
 }
 
-// TODO test and fine-tuning
 func (ac *AgentDeployConfig) buildPodSecurityPolicy(serviceAccountName string) (*rbacv1.ClusterRole, *rbacv1.ClusterRoleBinding, *corev1.ServiceAccount, *policyv1beta1.PodSecurityPolicy, error) {
 	roleName := "gardener.cloud:psp:kube-system:" + common.ApplicationName
 	resourceName := "gardener.kube-system." + common.ApplicationName
@@ -540,11 +544,14 @@ func (ac *AgentDeployConfig) buildPodSecurityPolicy(serviceAccountName string) (
 			DefaultAddCapabilities:   nil,
 			RequiredDropCapabilities: nil,
 			AllowedCapabilities:      allowedCapabilities,
-			Volumes:                  []policyv1beta1.FSType{policyv1beta1.Secret, policyv1beta1.ConfigMap},
+			Volumes:                  []policyv1beta1.FSType{policyv1beta1.Secret, policyv1beta1.ConfigMap, policyv1beta1.HostPath},
 			HostNetwork:              true,
-			HostPorts:                nil,
-			HostPID:                  false,
-			HostIPC:                  false,
+			HostPorts: []policyv1beta1.HostPortRange{
+				{Min: common.HostNetPodGRPCPort, Max: common.HostNetPodGRPCPort},
+				{Min: common.HostNetPodHttpPort, Max: common.HostNetPodHttpPort},
+			},
+			HostPID: false,
+			HostIPC: false,
 			SELinux: policyv1beta1.SELinuxStrategyOptions{
 				Rule: policyv1beta1.SELinuxStrategyRunAsAny,
 			},
@@ -575,20 +582,20 @@ func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
 		OutputDir:       common.PathOutputDir,
 		RetentionHours:  4,
 		LogObservations: false,
-		NodeNetwork: &config.NetworkConfig{
-			DataFilePrefix:  common.NameDaemonSetAgentNodeNet,
-			GRPCPort:        common.NodeNetPodGRPCPort,
-			HttpPort:        common.NodeNetPodHttpPort,
+		HostNetwork: &config.NetworkConfig{
+			DataFilePrefix:  common.NameDaemonSetAgentHostNet,
+			GRPCPort:        common.HostNetPodGRPCPort,
+			HttpPort:        common.HostNetPodHttpPort,
 			StartMDNSServer: true,
 			DefaultPeriod:   ac.DefaultPeriod,
 			Jobs: []config.Job{
 				{
 					JobID: "tcp-n2api-int",
-					Args:  []string{"checkTCPPort", "--endpoint-internal-kube-apiserver"},
+					Args:  []string{"checkTCPPort", "--endpoint-internal-kube-apiserver", "--scale-period"},
 				},
 				{
-					JobID: "tcp-n2kubeproxy",
-					Args:  []string{"checkTCPPort", "--node-port", "10249"},
+					JobID: "tcp-n2n",
+					Args:  []string{"checkTCPPort", "--node-port", fmt.Sprintf("%d", common.HostNetPodGRPCPort)},
 				},
 				{
 					JobID: "mdns-n2n",
@@ -612,11 +619,11 @@ func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
 			Jobs: []config.Job{
 				{
 					JobID: "tcp-p2api-int",
-					Args:  []string{"checkTCPPort", "--endpoint-internal-kube-apiserver"},
+					Args:  []string{"checkTCPPort", "--endpoint-internal-kube-apiserver", "--scale-period"},
 				},
 				{
-					JobID: "tcp-p2kubeproxy",
-					Args:  []string{"checkTCPPort", "--node-port", "10249"},
+					JobID: "tcp-p2n",
+					Args:  []string{"checkTCPPort", "--node-port", fmt.Sprintf("%d", common.HostNetPodGRPCPort)},
 				},
 				{
 					JobID: "tcp-p2p",
@@ -631,8 +638,8 @@ func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
 	}
 
 	if !ac.IgnoreAPIServerEndpoint {
-		for i := range cfg.NodeNetwork.Jobs {
-			job := &cfg.NodeNetwork.Jobs[i]
+		for i := range cfg.HostNetwork.Jobs {
+			job := &cfg.HostNetwork.Jobs[i]
 			if job.JobID == "nslookup-n" {
 				job.Args = append(job.Args, "--name-external-kube-apiserver")
 				break
@@ -645,19 +652,19 @@ func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
 				break
 			}
 		}
-		cfg.NodeNetwork.Jobs = append(cfg.NodeNetwork.Jobs,
+		cfg.HostNetwork.Jobs = append(cfg.HostNetwork.Jobs,
 			config.Job{
 				JobID: "tcp-n2api-ext",
-				Args:  []string{"checkTCPPort", "--endpoint-external-kube-apiserver"},
+				Args:  []string{"checkTCPPort", "--endpoint-external-kube-apiserver", "--scale-period"},
 			})
 		cfg.PodNetwork.Jobs = append(cfg.PodNetwork.Jobs,
 			config.Job{
 				JobID: "tcp-p2api-ext",
-				Args:  []string{"checkTCPPort", "--endpoint-external-kube-apiserver"},
+				Args:  []string{"checkTCPPort", "--endpoint-external-kube-apiserver", "--scale-period"},
 			})
 	}
 	if ac.PingEnabled {
-		cfg.NodeNetwork.Jobs = append(cfg.NodeNetwork.Jobs,
+		cfg.HostNetwork.Jobs = append(cfg.HostNetwork.Jobs,
 			config.Job{
 				JobID: "ping-n2n",
 				Args:  []string{"pingHost"},

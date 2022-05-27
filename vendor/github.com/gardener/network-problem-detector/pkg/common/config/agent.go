@@ -5,6 +5,7 @@
 package config
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -19,12 +20,22 @@ type AgentConfig struct {
 	AggregationReportPeriodSeconds *int `json:"aggregationReportPeriodSeconds,omitempty"`
 	// AggregationTimeWindowSeconds defines when a aggregation edge outdates if no new observations arrive
 	AggregationTimeWindowSeconds *int `json:"aggregationTimeWindowSeconds,omitempty"`
-	// NodeNetwork is the configuration specific for daemon set in node network
-	NodeNetwork *NetworkConfig `json:"nodeNetwork,omitempty"`
+	// HostNetwork is the configuration specific for daemon set in node network
+	HostNetwork *NetworkConfig `json:"hostNetwork,omitempty"`
 	// PodNetwork is the configuration specific for daemon set in node network
 	PodNetwork *NetworkConfig `json:"podNetwork,omitempty"`
+}
 
-	hashCode string
+func (c *AgentConfig) Clone() (*AgentConfig, error) {
+	data, err := json.Marshal(c)
+	if err != nil {
+		return nil, err
+	}
+	clone := &AgentConfig{}
+	if err = json.Unmarshal(data, clone); err != nil {
+		return nil, err
+	}
+	return clone, nil
 }
 
 type NetworkConfig struct {
