@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.2.0
 	github.com/gardener/gardener v1.45.0
-	github.com/gardener/network-problem-detector v0.0.0-20220527151713-3528595c1928
+	github.com/gardener/network-problem-detector v0.0.0-20220527152803-8a815eb5175d
 	github.com/go-logr/logr v1.2.0
 	github.com/onsi/ginkgo/v2 v2.1.3
 	github.com/onsi/gomega v1.18.0
@@ -118,7 +118,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	istio.io/api v0.0.0-20220304035241-8c47cbbea144 // indirect
 	istio.io/client-go v1.12.5 // indirect
 	istio.io/gogo-genproto v0.0.0-20210113155706-4daf5697332f // indirect
