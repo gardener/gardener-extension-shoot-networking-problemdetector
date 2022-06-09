@@ -7,8 +7,8 @@ images:
 - name: network-problem-detector-agent
   sourceRepository: github.com/gardener/network-problem-detector
   repository: eu.gcr.io/gardener-project/gardener/network-problem-detector
-  tag: "v0.1.0-dev-708b9210f0c300c1e514a341789a3c3bcc08ed3b"
+  tag: "v0.1.0-dev-624e6d3165caab91bb60ee3f85554f5c83d4609f"
 - name: network-problem-detector-controller
   sourceRepository: github.com/gardener/network-problem-detector
   repository: eu.gcr.io/gardener-project/gardener/network-problem-detector
-  tag: "v0.1.0-dev-708b9210f0c300c1e514a341789a3c3bcc08ed3b"
+  tag: "v0.1.0-dev-624e6d3165caab91bb60ee3f85554f5c83d4609f"
