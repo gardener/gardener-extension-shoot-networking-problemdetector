@@ -50,3 +50,12 @@ data:
       - source_labels: [ __name__ ]
         action: keep
         regex: nwpd_.+
+
+
+  dashboard_operators: |
+    network-problem-detector-dashboard.json: |-
+{{- .Files.Get "nwpd-dashboard.json" | nindent 6 }}
+
+  dashboard_users: |
+    network-problem-detector-dashboard.json: |-
+{{- .Files.Get "nwpd-dashboard.json" | nindent 6 }}
