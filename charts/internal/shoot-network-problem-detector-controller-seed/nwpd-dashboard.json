@@ -15,8 +15,8 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 32,
-  "iteration": 1655132523814,
+  "id": 15,
+  "iteration": 1655136035029,
   "links": [],
   "panels": [
     {
@@ -425,16 +425,18 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "Latency/Duration of check operations",
+      "description": "Latency/Duration of check operations tcp-n2n, tcp-n2p, tcp-p2p, tcp-p2n",
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "unit": "short"
+        },
         "overrides": []
       },
       "fill": 0,
       "fillGradient": 0,
       "gridPos": {
         "h": 17,
-        "w": 24,
+        "w": 6,
         "x": 0,
         "y": 24
       },
@@ -469,7 +471,8 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}",
+          "expr": "nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-n2n|tcp-n2p|tcp-p2n|tcp-p2p\"}",
+          "format": "time_series",
           "interval": "",
           "legendFormat": "jobid={{jobid}}, src={{src}}, dest={{dest}}",
           "refId": "A"
@@ -479,7 +482,313 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Check Duration",
+      "title": "Latency Cluster-internal Checks",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:1846",
+          "format": "short",
+          "label": "Seconds",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:1847",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "Latency/Duration of NS lookup operations",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 17,
+        "w": 6,
+        "x": 6,
+        "y": 24
+      },
+      "hiddenSeries": false,
+      "id": 13,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.13",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"nslookup.+\"}",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "jobid={{jobid}}, src={{src}}, dest={{dest}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Check Duration NS Lookups",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:1846",
+          "format": "short",
+          "label": "Seconds",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:1847",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "Latency/Duration of TCP checks to Kube API server",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 17,
+        "w": 6,
+        "x": 12,
+        "y": 24
+      },
+      "hiddenSeries": false,
+      "id": 14,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.13",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-.+api.+\"}",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "jobid={{jobid}}, src={{src}}, dest={{dest}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Check Duration TCP APIServer",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:1846",
+          "format": "short",
+          "label": "Seconds",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:1847",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "description": "Latency/Duration of HTTPS requests to Kube API server",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 17,
+        "w": 6,
+        "x": 18,
+        "y": 24
+      },
+      "hiddenSeries": false,
+      "id": 15,
+      "legend": {
+        "alignAsTable": false,
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.13",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"https.+\"}",
+          "format": "time_series",
+          "interval": "",
+          "legendFormat": "jobid={{jobid}}, src={{src}}, dest={{dest}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Check Duration HTTPS API Server",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -672,6 +981,7 @@
         "allValue": null,
         "current": {
           "selected": true,
+          "tags": [],
           "text": [
             "All"
           ],
@@ -706,13 +1016,9 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
-          "text": [
-            "All"
-          ],
-          "value": [
-            "$__all"
-          ]
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": null,
         "definition": "label_values(nwpd_aggregated_observations,src)",
@@ -741,13 +1047,9 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
-          "text": [
-            "All"
-          ],
-          "value": [
-            "$__all"
-          ]
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": null,
         "definition": "label_values(nwpd_aggregated_observations,dest)",
@@ -783,5 +1085,5 @@
   "timezone": "",
   "title": "Network Problem Detector",
   "uid": "8TgfRJj7k",
-  "version": 12
+  "version": 1
 }
