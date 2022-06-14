@@ -482,7 +482,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Latency Cluster-internal Checks",
+      "title": "Latency Cluster-internal TCP Checks",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -584,7 +584,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Check Duration NS Lookups",
+      "title": "Latency NS Lookups",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -686,7 +686,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Check Duration TCP APIServer",
+      "title": "Latency TCP Checks API Server",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -788,7 +788,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Check Duration HTTPS API Server",
+      "title": "Latency HTTPS Checks API Server ",
       "tooltip": {
         "shared": true,
         "sort": 0,
