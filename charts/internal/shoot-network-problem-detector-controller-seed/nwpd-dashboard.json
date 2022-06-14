@@ -379,7 +379,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Failures per Destination",
+      "title": "Failures by Destination",
       "tooltip": {
         "shared": true,
         "sort": 0,
