@@ -11,14 +11,6 @@ image:
 serviceName: shoot-networking-problemdetector
 replicaCount: 1
 
-resources:
-  requests:
-   cpu: "30m"
-   memory: "64Mi"
-  limits:
-   cpu: "50m"
-   memory: "128Mi"
-
 controllers:
   lifecycle:
     concurrentSyncs: 5
@@ -28,6 +20,7 @@ controllers:
 
 ignoreResources: false
 
+resources: {}
 vpa:
   enabled: true
   resourcePolicy:
