@@ -83,6 +83,7 @@ func (a *actuator) Reconcile(ctx context.Context, ex *extensionsv1alpha1.Extensi
 
 func (a *actuator) createSeedResources(ctx context.Context, cluster *controller.Cluster, namespace string) error {
 	values := map[string]interface{}{
+		"replicaCount":                     controller.GetReplicas(cluster, 1),
 		"genericTokenKubeconfigSecretName": extensions.GenericTokenKubeconfigSecretNameFromCluster(cluster),
 		"shootClusterSecret":               gutil.SecretNamePrefixShootAccess + constants.ShootAccessSecretName,
 	}
