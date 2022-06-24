@@ -862,6 +862,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*NodeLocalDNS)(nil), (*core.NodeLocalDNS)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_NodeLocalDNS_To_core_NodeLocalDNS(a.(*NodeLocalDNS), b.(*core.NodeLocalDNS), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.NodeLocalDNS)(nil), (*NodeLocalDNS)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_NodeLocalDNS_To_v1beta1_NodeLocalDNS(a.(*core.NodeLocalDNS), b.(*NodeLocalDNS), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*OIDCConfig)(nil), (*core.OIDCConfig)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1beta1_OIDCConfig_To_core_OIDCConfig(a.(*OIDCConfig), b.(*core.OIDCConfig), scope)
 	}); err != nil {
@@ -1352,6 +1362,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*ShootETCDEncryptionKeyRotation)(nil), (*core.ShootETCDEncryptionKeyRotation)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_ShootETCDEncryptionKeyRotation_To_core_ShootETCDEncryptionKeyRotation(a.(*ShootETCDEncryptionKeyRotation), b.(*core.ShootETCDEncryptionKeyRotation), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.ShootETCDEncryptionKeyRotation)(nil), (*ShootETCDEncryptionKeyRotation)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_ShootETCDEncryptionKeyRotation_To_v1beta1_ShootETCDEncryptionKeyRotation(a.(*core.ShootETCDEncryptionKeyRotation), b.(*ShootETCDEncryptionKeyRotation), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*ShootKubeconfigRotation)(nil), (*core.ShootKubeconfigRotation)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1beta1_ShootKubeconfigRotation_To_core_ShootKubeconfigRotation(a.(*ShootKubeconfigRotation), b.(*core.ShootKubeconfigRotation), scope)
 	}); err != nil {
@@ -1392,6 +1412,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}); err != nil {
 		return err
 	}
+	if err := s.AddGeneratedConversionFunc((*ShootObservabilityRotation)(nil), (*core.ShootObservabilityRotation)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_ShootObservabilityRotation_To_core_ShootObservabilityRotation(a.(*ShootObservabilityRotation), b.(*core.ShootObservabilityRotation), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.ShootObservabilityRotation)(nil), (*ShootObservabilityRotation)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_ShootObservabilityRotation_To_v1beta1_ShootObservabilityRotation(a.(*core.ShootObservabilityRotation), b.(*ShootObservabilityRotation), scope)
+	}); err != nil {
+		return err
+	}
 	if err := s.AddGeneratedConversionFunc((*ShootSSHKeypairRotation)(nil), (*core.ShootSSHKeypairRotation)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_v1beta1_ShootSSHKeypairRotation_To_core_ShootSSHKeypairRotation(a.(*ShootSSHKeypairRotation), b.(*core.ShootSSHKeypairRotation), scope)
 	}); err != nil {
@@ -1399,6 +1429,16 @@ func RegisterConversions(s *runtime.Scheme) error {
 	}
 	if err := s.AddGeneratedConversionFunc((*core.ShootSSHKeypairRotation)(nil), (*ShootSSHKeypairRotation)(nil), func(a, b interface{}, scope conversion.Scope) error {
 		return Convert_core_ShootSSHKeypairRotation_To_v1beta1_ShootSSHKeypairRotation(a.(*core.ShootSSHKeypairRotation), b.(*ShootSSHKeypairRotation), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*ShootServiceAccountKeyRotation)(nil), (*core.ShootServiceAccountKeyRotation)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_v1beta1_ShootServiceAccountKeyRotation_To_core_ShootServiceAccountKeyRotation(a.(*ShootServiceAccountKeyRotation), b.(*core.ShootServiceAccountKeyRotation), scope)
+	}); err != nil {
+		return err
+	}
+	if err := s.AddGeneratedConversionFunc((*core.ShootServiceAccountKeyRotation)(nil), (*ShootServiceAccountKeyRotation)(nil), func(a, b interface{}, scope conversion.Scope) error {
+		return Convert_core_ShootServiceAccountKeyRotation_To_v1beta1_ShootServiceAccountKeyRotation(a.(*core.ShootServiceAccountKeyRotation), b.(*ShootServiceAccountKeyRotation), scope)
 	}); err != nil {
 		return err
 	}
@@ -3691,6 +3731,30 @@ func Convert_core_NginxIngress_To_v1beta1_NginxIngress(in *core.NginxIngress, ou
 	return autoConvert_core_NginxIngress_To_v1beta1_NginxIngress(in, out, s)
 }
 
+func autoConvert_v1beta1_NodeLocalDNS_To_core_NodeLocalDNS(in *NodeLocalDNS, out *core.NodeLocalDNS, s conversion.Scope) error {
+	out.Enabled = in.Enabled
+	out.ForceTCPToClusterDNS = (*bool)(unsafe.Pointer(in.ForceTCPToClusterDNS))
+	out.ForceTCPToUpstreamDNS = (*bool)(unsafe.Pointer(in.ForceTCPToUpstreamDNS))
+	return nil
+}
+
+// Convert_v1beta1_NodeLocalDNS_To_core_NodeLocalDNS is an autogenerated conversion function.
+func Convert_v1beta1_NodeLocalDNS_To_core_NodeLocalDNS(in *NodeLocalDNS, out *core.NodeLocalDNS, s conversion.Scope) error {
+	return autoConvert_v1beta1_NodeLocalDNS_To_core_NodeLocalDNS(in, out, s)
+}
+
+func autoConvert_core_NodeLocalDNS_To_v1beta1_NodeLocalDNS(in *core.NodeLocalDNS, out *NodeLocalDNS, s conversion.Scope) error {
+	out.Enabled = in.Enabled
+	out.ForceTCPToClusterDNS = (*bool)(unsafe.Pointer(in.ForceTCPToClusterDNS))
+	out.ForceTCPToUpstreamDNS = (*bool)(unsafe.Pointer(in.ForceTCPToUpstreamDNS))
+	return nil
+}
+
+// Convert_core_NodeLocalDNS_To_v1beta1_NodeLocalDNS is an autogenerated conversion function.
+func Convert_core_NodeLocalDNS_To_v1beta1_NodeLocalDNS(in *core.NodeLocalDNS, out *NodeLocalDNS, s conversion.Scope) error {
+	return autoConvert_core_NodeLocalDNS_To_v1beta1_NodeLocalDNS(in, out, s)
+}
+
 func autoConvert_v1beta1_OIDCConfig_To_core_OIDCConfig(in *OIDCConfig, out *core.OIDCConfig, s conversion.Scope) error {
 	out.CABundle = (*string)(unsafe.Pointer(in.CABundle))
 	out.ClientAuthentication = (*core.OpenIDConnectClientAuthentication)(unsafe.Pointer(in.ClientAuthentication))
@@ -5004,6 +5068,9 @@ func autoConvert_v1beta1_ShootCredentialsRotation_To_core_ShootCredentialsRotati
 	out.CertificateAuthorities = (*core.ShootCARotation)(unsafe.Pointer(in.CertificateAuthorities))
 	out.Kubeconfig = (*core.ShootKubeconfigRotation)(unsafe.Pointer(in.Kubeconfig))
 	out.SSHKeypair = (*core.ShootSSHKeypairRotation)(unsafe.Pointer(in.SSHKeypair))
+	out.Observability = (*core.ShootObservabilityRotation)(unsafe.Pointer(in.Observability))
+	out.ServiceAccountKey = (*core.ShootServiceAccountKeyRotation)(unsafe.Pointer(in.ServiceAccountKey))
+	out.ETCDEncryptionKey = (*core.ShootETCDEncryptionKeyRotation)(unsafe.Pointer(in.ETCDEncryptionKey))
 	return nil
 }
 
@@ -5016,12 +5083,39 @@ func autoConvert_core_ShootCredentialsRotation_To_v1beta1_ShootCredentialsRotati
 	out.CertificateAuthorities = (*ShootCARotation)(unsafe.Pointer(in.CertificateAuthorities))
 	out.Kubeconfig = (*ShootKubeconfigRotation)(unsafe.Pointer(in.Kubeconfig))
 	out.SSHKeypair = (*ShootSSHKeypairRotation)(unsafe.Pointer(in.SSHKeypair))
+	out.Observability = (*ShootObservabilityRotation)(unsafe.Pointer(in.Observability))
+	out.ServiceAccountKey = (*ShootServiceAccountKeyRotation)(unsafe.Pointer(in.ServiceAccountKey))
+	out.ETCDEncryptionKey = (*ShootETCDEncryptionKeyRotation)(unsafe.Pointer(in.ETCDEncryptionKey))
 	return nil
 }
 
 // Convert_core_ShootCredentialsRotation_To_v1beta1_ShootCredentialsRotation is an autogenerated conversion function.
 func Convert_core_ShootCredentialsRotation_To_v1beta1_ShootCredentialsRotation(in *core.ShootCredentialsRotation, out *ShootCredentialsRotation, s conversion.Scope) error {
 	return autoConvert_core_ShootCredentialsRotation_To_v1beta1_ShootCredentialsRotation(in, out, s)
+}
+
+func autoConvert_v1beta1_ShootETCDEncryptionKeyRotation_To_core_ShootETCDEncryptionKeyRotation(in *ShootETCDEncryptionKeyRotation, out *core.ShootETCDEncryptionKeyRotation, s conversion.Scope) error {
+	out.Phase = core.ShootCredentialsRotationPhase(in.Phase)
+	out.LastInitiationTime = (*metav1.Time)(unsafe.Pointer(in.LastInitiationTime))
+	out.LastCompletionTime = (*metav1.Time)(unsafe.Pointer(in.LastCompletionTime))
+	return nil
+}
+
+// Convert_v1beta1_ShootETCDEncryptionKeyRotation_To_core_ShootETCDEncryptionKeyRotation is an autogenerated conversion function.
+func Convert_v1beta1_ShootETCDEncryptionKeyRotation_To_core_ShootETCDEncryptionKeyRotation(in *ShootETCDEncryptionKeyRotation, out *core.ShootETCDEncryptionKeyRotation, s conversion.Scope) error {
+	return autoConvert_v1beta1_ShootETCDEncryptionKeyRotation_To_core_ShootETCDEncryptionKeyRotation(in, out, s)
+}
+
+func autoConvert_core_ShootETCDEncryptionKeyRotation_To_v1beta1_ShootETCDEncryptionKeyRotation(in *core.ShootETCDEncryptionKeyRotation, out *ShootETCDEncryptionKeyRotation, s conversion.Scope) error {
+	out.Phase = ShootCredentialsRotationPhase(in.Phase)
+	out.LastInitiationTime = (*metav1.Time)(unsafe.Pointer(in.LastInitiationTime))
+	out.LastCompletionTime = (*metav1.Time)(unsafe.Pointer(in.LastCompletionTime))
+	return nil
+}
+
+// Convert_core_ShootETCDEncryptionKeyRotation_To_v1beta1_ShootETCDEncryptionKeyRotation is an autogenerated conversion function.
+func Convert_core_ShootETCDEncryptionKeyRotation_To_v1beta1_ShootETCDEncryptionKeyRotation(in *core.ShootETCDEncryptionKeyRotation, out *ShootETCDEncryptionKeyRotation, s conversion.Scope) error {
+	return autoConvert_core_ShootETCDEncryptionKeyRotation_To_v1beta1_ShootETCDEncryptionKeyRotation(in, out, s)
 }
 
 func autoConvert_v1beta1_ShootKubeconfigRotation_To_core_ShootKubeconfigRotation(in *ShootKubeconfigRotation, out *core.ShootKubeconfigRotation, s conversion.Scope) error {
@@ -5138,6 +5232,28 @@ func Convert_core_ShootNetworks_To_v1beta1_ShootNetworks(in *core.ShootNetworks,
 	return autoConvert_core_ShootNetworks_To_v1beta1_ShootNetworks(in, out, s)
 }
 
+func autoConvert_v1beta1_ShootObservabilityRotation_To_core_ShootObservabilityRotation(in *ShootObservabilityRotation, out *core.ShootObservabilityRotation, s conversion.Scope) error {
+	out.LastInitiationTime = (*metav1.Time)(unsafe.Pointer(in.LastInitiationTime))
+	out.LastCompletionTime = (*metav1.Time)(unsafe.Pointer(in.LastCompletionTime))
+	return nil
+}
+
+// Convert_v1beta1_ShootObservabilityRotation_To_core_ShootObservabilityRotation is an autogenerated conversion function.
+func Convert_v1beta1_ShootObservabilityRotation_To_core_ShootObservabilityRotation(in *ShootObservabilityRotation, out *core.ShootObservabilityRotation, s conversion.Scope) error {
+	return autoConvert_v1beta1_ShootObservabilityRotation_To_core_ShootObservabilityRotation(in, out, s)
+}
+
+func autoConvert_core_ShootObservabilityRotation_To_v1beta1_ShootObservabilityRotation(in *core.ShootObservabilityRotation, out *ShootObservabilityRotation, s conversion.Scope) error {
+	out.LastInitiationTime = (*metav1.Time)(unsafe.Pointer(in.LastInitiationTime))
+	out.LastCompletionTime = (*metav1.Time)(unsafe.Pointer(in.LastCompletionTime))
+	return nil
+}
+
+// Convert_core_ShootObservabilityRotation_To_v1beta1_ShootObservabilityRotation is an autogenerated conversion function.
+func Convert_core_ShootObservabilityRotation_To_v1beta1_ShootObservabilityRotation(in *core.ShootObservabilityRotation, out *ShootObservabilityRotation, s conversion.Scope) error {
+	return autoConvert_core_ShootObservabilityRotation_To_v1beta1_ShootObservabilityRotation(in, out, s)
+}
+
 func autoConvert_v1beta1_ShootSSHKeypairRotation_To_core_ShootSSHKeypairRotation(in *ShootSSHKeypairRotation, out *core.ShootSSHKeypairRotation, s conversion.Scope) error {
 	out.LastInitiationTime = (*metav1.Time)(unsafe.Pointer(in.LastInitiationTime))
 	out.LastCompletionTime = (*metav1.Time)(unsafe.Pointer(in.LastCompletionTime))
@@ -5158,6 +5274,30 @@ func autoConvert_core_ShootSSHKeypairRotation_To_v1beta1_ShootSSHKeypairRotation
 // Convert_core_ShootSSHKeypairRotation_To_v1beta1_ShootSSHKeypairRotation is an autogenerated conversion function.
 func Convert_core_ShootSSHKeypairRotation_To_v1beta1_ShootSSHKeypairRotation(in *core.ShootSSHKeypairRotation, out *ShootSSHKeypairRotation, s conversion.Scope) error {
 	return autoConvert_core_ShootSSHKeypairRotation_To_v1beta1_ShootSSHKeypairRotation(in, out, s)
+}
+
+func autoConvert_v1beta1_ShootServiceAccountKeyRotation_To_core_ShootServiceAccountKeyRotation(in *ShootServiceAccountKeyRotation, out *core.ShootServiceAccountKeyRotation, s conversion.Scope) error {
+	out.Phase = core.ShootCredentialsRotationPhase(in.Phase)
+	out.LastInitiationTime = (*metav1.Time)(unsafe.Pointer(in.LastInitiationTime))
+	out.LastCompletionTime = (*metav1.Time)(unsafe.Pointer(in.LastCompletionTime))
+	return nil
+}
+
+// Convert_v1beta1_ShootServiceAccountKeyRotation_To_core_ShootServiceAccountKeyRotation is an autogenerated conversion function.
+func Convert_v1beta1_ShootServiceAccountKeyRotation_To_core_ShootServiceAccountKeyRotation(in *ShootServiceAccountKeyRotation, out *core.ShootServiceAccountKeyRotation, s conversion.Scope) error {
+	return autoConvert_v1beta1_ShootServiceAccountKeyRotation_To_core_ShootServiceAccountKeyRotation(in, out, s)
+}
+
+func autoConvert_core_ShootServiceAccountKeyRotation_To_v1beta1_ShootServiceAccountKeyRotation(in *core.ShootServiceAccountKeyRotation, out *ShootServiceAccountKeyRotation, s conversion.Scope) error {
+	out.Phase = ShootCredentialsRotationPhase(in.Phase)
+	out.LastInitiationTime = (*metav1.Time)(unsafe.Pointer(in.LastInitiationTime))
+	out.LastCompletionTime = (*metav1.Time)(unsafe.Pointer(in.LastCompletionTime))
+	return nil
+}
+
+// Convert_core_ShootServiceAccountKeyRotation_To_v1beta1_ShootServiceAccountKeyRotation is an autogenerated conversion function.
+func Convert_core_ShootServiceAccountKeyRotation_To_v1beta1_ShootServiceAccountKeyRotation(in *core.ShootServiceAccountKeyRotation, out *ShootServiceAccountKeyRotation, s conversion.Scope) error {
+	return autoConvert_core_ShootServiceAccountKeyRotation_To_v1beta1_ShootServiceAccountKeyRotation(in, out, s)
 }
 
 func autoConvert_v1beta1_ShootSpec_To_core_ShootSpec(in *ShootSpec, out *core.ShootSpec, s conversion.Scope) error {
@@ -5246,6 +5386,7 @@ func autoConvert_v1beta1_ShootStatus_To_core_ShootStatus(in *ShootStatus, out *c
 	out.AdvertisedAddresses = *(*[]core.ShootAdvertisedAddress)(unsafe.Pointer(&in.AdvertisedAddresses))
 	out.MigrationStartTime = (*metav1.Time)(unsafe.Pointer(in.MigrationStartTime))
 	out.Credentials = (*core.ShootCredentials)(unsafe.Pointer(in.Credentials))
+	out.LastHibernationTriggerTime = (*metav1.Time)(unsafe.Pointer(in.LastHibernationTriggerTime))
 	return nil
 }
 
@@ -5261,6 +5402,7 @@ func autoConvert_core_ShootStatus_To_v1beta1_ShootStatus(in *core.ShootStatus, o
 		return err
 	}
 	out.IsHibernated = in.IsHibernated
+	out.LastHibernationTriggerTime = (*metav1.Time)(unsafe.Pointer(in.LastHibernationTriggerTime))
 	out.LastOperation = (*LastOperation)(unsafe.Pointer(in.LastOperation))
 	out.LastErrors = *(*[]LastError)(unsafe.Pointer(&in.LastErrors))
 	out.ObservedGeneration = in.ObservedGeneration
@@ -5308,6 +5450,7 @@ func Convert_core_ShootTemplate_To_v1beta1_ShootTemplate(in *core.ShootTemplate,
 
 func autoConvert_v1beta1_SystemComponents_To_core_SystemComponents(in *SystemComponents, out *core.SystemComponents, s conversion.Scope) error {
 	out.CoreDNS = (*core.CoreDNS)(unsafe.Pointer(in.CoreDNS))
+	out.NodeLocalDNS = (*core.NodeLocalDNS)(unsafe.Pointer(in.NodeLocalDNS))
 	return nil
 }
 
@@ -5318,6 +5461,7 @@ func Convert_v1beta1_SystemComponents_To_core_SystemComponents(in *SystemCompone
 
 func autoConvert_core_SystemComponents_To_v1beta1_SystemComponents(in *core.SystemComponents, out *SystemComponents, s conversion.Scope) error {
 	out.CoreDNS = (*CoreDNS)(unsafe.Pointer(in.CoreDNS))
+	out.NodeLocalDNS = (*NodeLocalDNS)(unsafe.Pointer(in.NodeLocalDNS))
 	return nil
 }
 
