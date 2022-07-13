@@ -238,8 +238,8 @@ github.com/gardener/hvpa-controller/api v0.4.0 h1:IwNHmqEjleDLmvSDzIcSrIcqrNI8R0
 github.com/gardener/hvpa-controller/api v0.4.0/go.mod h1:QQl3ELkCaki+8RhXl0FZMfvnm0WCGwGJlGmrxJj6lvM=
 github.com/gardener/machine-controller-manager v0.41.0 h1:X8MrCqnGnRnn8GwDU3ajeRbu50yFUplcac++isqCFY4=
 github.com/gardener/machine-controller-manager v0.41.0/go.mod h1:43OABkCemMS6b35z3OprbfaT3p2HxKAZkJekjCO2T48=
-github.com/gardener/network-problem-detector v0.2.0 h1:i2hpYg6e7m1Lkhbixl5MKANa5VeV+W8z9vyE/blHAag=
-github.com/gardener/network-problem-detector v0.2.0/go.mod h1:gKv9DGkkco/CfDTiVZbqYVH/tzP5iL24fAlETgMJr6g=
+github.com/gardener/network-problem-detector v0.3.0 h1:nflQ6KZyV8MR6iwo1cu9SRzVny/70Ji0UIpJ7lqMy2g=
+github.com/gardener/network-problem-detector v0.3.0/go.mod h1:MTLDQEcwyRD9QjzXlLS2VA3YbGTPZurmkfx2PeZaegA=
 github.com/getkin/kin-openapi v0.76.0/go.mod h1:660oXbgy5JFMKreazJaQTw7o+X00qeSyhcnluiMv+Xg=
 github.com/getsentry/raven-go v0.2.0/go.mod h1:KungGk8q33+aIAZUIVWZDr2OfAEBsO49PX4NzFV5kcQ=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
