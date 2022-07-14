@@ -1772,6 +1772,11 @@ func (in *KubeSchedulerConfig) DeepCopyInto(out *KubeSchedulerConfig) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Profile != nil {
+		in, out := &in.Profile, &out.Profile
+		*out = new(SchedulingProfile)
+		**out = **in
+	}
 	return
 }
 
@@ -2246,6 +2251,11 @@ func (in *Machine) DeepCopyInto(out *Machine) {
 		*out = new(ShootMachineImage)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Architecture != nil {
+		in, out := &in.Architecture, &out.Architecture
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
@@ -2334,6 +2344,11 @@ func (in *MachineImageVersion) DeepCopyInto(out *MachineImageVersion) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.Architectures != nil {
+		in, out := &in.Architectures, &out.Architectures
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
@@ -2361,6 +2376,11 @@ func (in *MachineType) DeepCopyInto(out *MachineType) {
 	if in.Usable != nil {
 		in, out := &in.Usable, &out.Usable
 		*out = new(bool)
+		**out = **in
+	}
+	if in.Architecture != nil {
+		in, out := &in.Architecture, &out.Architecture
+		*out = new(string)
 		**out = **in
 	}
 	return

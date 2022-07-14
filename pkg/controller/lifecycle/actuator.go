@@ -17,6 +17,7 @@ import (
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"github.com/gardener/gardener/extensions/pkg/util"
+	corev1betaconstants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	resourcesv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 	"github.com/gardener/gardener/pkg/chartrenderer"
@@ -86,6 +87,7 @@ func (a *actuator) createSeedResources(ctx context.Context, cluster *controller.
 		"replicaCount":                     controller.GetReplicas(cluster, 1),
 		"genericTokenKubeconfigSecretName": extensions.GenericTokenKubeconfigSecretNameFromCluster(cluster),
 		"shootClusterSecret":               gutil.SecretNamePrefixShootAccess + constants.ShootAccessSecretName,
+		"priorityClassName":                corev1betaconstants.PriorityClassNameShootControlPlane200,
 	}
 
 	if err := gutil.NewShootAccessSecret(constants.ShootAccessSecretName, namespace).Reconcile(ctx, a.client); err != nil {
@@ -253,6 +255,7 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 		DefaultPeriod:            defaultPeriod,
 		PodSecurityPolicyEnabled: pspEnabled,
 		PingEnabled:              pingEnabled,
+		PriorityClassName:        corev1betaconstants.PriorityClassNameShootSystem900,
 	}
 	objs, err := deploy.DeployNetworkProblemDetectorAgent(deployConfig)
 	if err != nil {
