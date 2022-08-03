@@ -25,12 +25,14 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "",
+      "description": "Shows count of observations with status ok and failed.",
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "unit": "short"
+        },
         "overrides": []
       },
-      "fill": 0,
+      "fill": 4,
       "fillGradient": 0,
       "gridPos": {
         "h": 24,
@@ -58,7 +60,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.13",
+      "pluginVersion": "7.5.16",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -69,17 +71,25 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "increase(nwpd_aggregated_observations{status=\"ok\",jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[5m])/(1e-30 +increase(nwpd_aggregated_observations{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[5m]))",
+          "expr": " count (rate(nwpd_aggregated_observations{status=\"ok\", jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[$__rate_interval])> 0) ",
           "interval": "",
-          "legendFormat": "job={{jobid}}, src={{src}}, dest={{dest}}",
+          "legendFormat": "status=ok",
           "refId": "A"
+        },
+        {
+          "exemplar": true,
+          "expr": " count (rate(nwpd_aggregated_observations{status=\"failed\", jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[$__rate_interval])> 0) ",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "status=failed",
+          "refId": "B"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "OK per 5 min window",
+      "title": "Overall Status",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -98,7 +108,7 @@
           "$$hashKey": "object:429",
           "decimals": 0,
           "format": "short",
-          "label": null,
+          "label": "Observation Count",
           "logBase": 1,
           "max": null,
           "min": "0",
@@ -170,7 +180,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (jobid) (increase(nwpd_aggregated_observations{status=\"failed\",jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[2m])/(1e-30 +increase(nwpd_aggregated_observations{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[2m]))) unless sum by (jobid) (increase(nwpd_aggregated_observations{status=\"failed\"}[2m])/(1e-30 +increase(nwpd_aggregated_observations{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[2m]))) == 0",
+          "expr": "count by (jobid) (rate(nwpd_aggregated_observations{status=\"failed\",jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[$__rate_interval]) > 0)",
           "interval": "",
           "legendFormat": "{{jobid}}",
           "refId": "A"
@@ -271,7 +281,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (src) (increase(nwpd_aggregated_observations{status=\"failed\",jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[2m])/(1e-30 +increase(nwpd_aggregated_observations{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[2m]))) unless sum by (src) (increase(nwpd_aggregated_observations{status=\"failed\"}[2m])/(1e-30 +increase(nwpd_aggregated_observations{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[2m]))) == 0",
+          "expr": "count by (src) (rate(nwpd_aggregated_observations{status=\"failed\",jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[$__rate_interval]) > 0)",
           "interval": "",
           "legendFormat": "{{src}}",
           "refId": "A"
@@ -369,7 +379,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (dest) (increase(nwpd_aggregated_observations{status=\"failed\",jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[2m])/(1e-30 +increase(nwpd_aggregated_observations{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[2m]))) unless sum by (dest) (increase(nwpd_aggregated_observations{status=\"failed\"}[2m])/(1e-30 +increase(nwpd_aggregated_observations{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[2m]))) == 0",
+          "expr": "count by (dest) (rate(nwpd_aggregated_observations{status=\"failed\",jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[$__rate_interval]) > 0)",
           "interval": "",
           "legendFormat": "{{dest}}",
           "refId": "A"
