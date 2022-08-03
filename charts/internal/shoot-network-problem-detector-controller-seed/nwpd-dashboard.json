@@ -434,7 +434,6 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "description": "Latency/Duration of check operations tcp-n2n, tcp-n2p, tcp-p2p, tcp-p2n",
       "fieldConfig": {
         "defaults": {
@@ -451,7 +450,7 @@
         "y": 24
       },
       "hiddenSeries": false,
-      "id": 12,
+      "id": 23763571993,
       "legend": {
         "alignAsTable": false,
         "avg": false,
@@ -470,7 +469,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.13",
+      "pluginVersion": "7.5.16",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -480,12 +479,20 @@
       "steppedLine": false,
       "targets": [
         {
-          "exemplar": true,
-          "expr": "nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-n2n|tcp-n2p|tcp-p2n|tcp-p2p\"}",
-          "format": "time_series",
+          "expr": "quantile by (jobid) (0.5,nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-n2n|tcp-n2p|tcp-p2n|tcp-p2p\"})",
+          "legendFormat": "q50 jobid={{jobid}}",
           "interval": "",
-          "legendFormat": "jobid={{jobid}}, src={{src}}, dest={{dest}}",
+          "exemplar": true,
+          "format": "time_series",
           "refId": "A"
+        },
+        {
+          "expr": "quantile by (jobid) (0.99, nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-n2n|tcp-n2p|tcp-p2n|tcp-p2p\"})",
+          "legendFormat": "q99 jobid={{jobid}}",
+          "interval": "",
+          "exemplar": true,
+          "refId": "B",
+          "hide": false
         }
       ],
       "thresholds": [],
@@ -529,14 +536,14 @@
       "yaxis": {
         "align": false,
         "alignLevel": null
-      }
+      },
+      "datasource": null
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "description": "Latency/Duration of NS lookup operations",
       "fieldConfig": {
         "defaults": {
@@ -553,7 +560,7 @@
         "y": 24
       },
       "hiddenSeries": false,
-      "id": 13,
+      "id": 23763571993,
       "legend": {
         "alignAsTable": false,
         "avg": false,
@@ -572,7 +579,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.13",
+      "pluginVersion": "7.5.16",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -582,12 +589,20 @@
       "steppedLine": false,
       "targets": [
         {
-          "exemplar": true,
-          "expr": "nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"nslookup.+\"}",
-          "format": "time_series",
+          "expr": "quantile by (jobid) (0.5,nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"nslookup.+\"})",
+          "legendFormat": "q50 jobid={{jobid}}",
           "interval": "",
-          "legendFormat": "jobid={{jobid}}, src={{src}}, dest={{dest}}",
+          "exemplar": true,
+          "format": "time_series",
           "refId": "A"
+        },
+        {
+          "expr": "quantile by (jobid) (0.99,nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"nslookup.+\"})",
+          "legendFormat": "q99 jobid={{jobid}}",
+          "interval": "",
+          "exemplar": true,
+          "refId": "B",
+          "hide": false
         }
       ],
       "thresholds": [],
@@ -631,14 +646,14 @@
       "yaxis": {
         "align": false,
         "alignLevel": null
-      }
+      },
+      "datasource": null
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "description": "Latency/Duration of TCP checks to Kube API server",
       "fieldConfig": {
         "defaults": {
@@ -655,7 +670,7 @@
         "y": 24
       },
       "hiddenSeries": false,
-      "id": 14,
+      "id": 23763571993,
       "legend": {
         "alignAsTable": false,
         "avg": false,
@@ -674,7 +689,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.13",
+      "pluginVersion": "7.5.16",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -684,12 +699,20 @@
       "steppedLine": false,
       "targets": [
         {
-          "exemplar": true,
-          "expr": "nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-.+api.+\"}",
-          "format": "time_series",
+          "expr": "quantile by (jobid) (0.5,nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-.+api.+\"})",
+          "legendFormat": "q50 jobid={{jobid}}",
           "interval": "",
-          "legendFormat": "jobid={{jobid}}, src={{src}}, dest={{dest}}",
+          "exemplar": true,
+          "format": "time_series",
           "refId": "A"
+        },
+        {
+          "expr": "quantile by (jobid) (0.99,nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-.+api.+\"})",
+          "legendFormat": "q99 jobid={{jobid}}",
+          "interval": "",
+          "exemplar": true,
+          "refId": "B",
+          "hide": false
         }
       ],
       "thresholds": [],
@@ -733,14 +756,14 @@
       "yaxis": {
         "align": false,
         "alignLevel": null
-      }
+      },
+      "datasource": null
     },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "description": "Latency/Duration of HTTPS requests to Kube API server",
       "fieldConfig": {
         "defaults": {
@@ -757,7 +780,7 @@
         "y": 24
       },
       "hiddenSeries": false,
-      "id": 15,
+      "id": 23763571993,
       "legend": {
         "alignAsTable": false,
         "avg": false,
@@ -776,7 +799,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.13",
+      "pluginVersion": "7.5.16",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -786,12 +809,20 @@
       "steppedLine": false,
       "targets": [
         {
-          "exemplar": true,
-          "expr": "nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"https.+\"}",
-          "format": "time_series",
+          "expr": "quantile by (jobid) (0.5,nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"https.+\"})",
+          "legendFormat": "q50 jobid={{jobid}}",
           "interval": "",
-          "legendFormat": "jobid={{jobid}}, src={{src}}, dest={{dest}}",
+          "exemplar": true,
+          "format": "time_series",
           "refId": "A"
+        },
+        {
+          "expr": "quantile by (jobid) (0.99,nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"https.+\"})",
+          "legendFormat": "q99 jobid={{jobid}}",
+          "interval": "",
+          "exemplar": true,
+          "refId": "B",
+          "hide": false
         }
       ],
       "thresholds": [],
@@ -835,7 +866,8 @@
       "yaxis": {
         "align": false,
         "alignLevel": null
-      }
+      },
+      "datasource": null
     },
     {
       "datasource": null,
