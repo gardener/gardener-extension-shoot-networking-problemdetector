@@ -44,3 +44,6 @@ networkProblemDetector:
   defaultPeriod: 15s
 #  pspDisabled: false # pod security policy
 #  pingEnabled: false
+#  k8sExporter:
+#    enabled: false
+#    heartbeatPeriod: 3m

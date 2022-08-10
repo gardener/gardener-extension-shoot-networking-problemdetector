@@ -39,4 +39,17 @@ type NetworkProblemDetector struct {
 	// PingEnabled is a flag if ICMP ping checks should be performed.
 	// +optional
 	PingEnabled *bool `json:"pingEnabled,omitempty"`
+
+	// K8sExporter configures the K8s exporter for updating node conditions and creating events.
+	// +optional
+	K8sExporter *K8sExporter `json:"k8sExporter,omitempty"`
+}
+
+// K8sExporter contains information for the K8s exporter which patches the node conditions periodically if enabled.
+type K8sExporter struct {
+	// Enabled if true, the K8s exporter is active
+	Enabled bool `json:"enabled"`
+	// HeartbeatPeriod defines the update frequency of the node conditions.
+	// +optional
+	HeartbeatPeriod *metav1.Duration `json:"heartbeatPeriod,omitempty"`
 }

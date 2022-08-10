@@ -29,13 +29,15 @@ import (
 	gutil "github.com/gardener/gardener/pkg/utils/gardener"
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
 	managedresources "github.com/gardener/gardener/pkg/utils/managedresources"
+	"github.com/gardener/network-problem-detector/pkg/common"
 	"github.com/gardener/network-problem-detector/pkg/deploy"
-
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -112,6 +114,7 @@ func (a *actuator) createShootResources(ctx context.Context, log logr.Logger, cl
 	defaultPeriod := 10 * time.Second
 	pspDisabledByConfig := false
 	pingEnabled := false
+	var k8sExporter *config.K8sExporter
 	if a.serviceConfig.NetworkProblemDetector != nil {
 		if a.serviceConfig.NetworkProblemDetector.DefaultPeriod != nil {
 			defaultPeriod = a.serviceConfig.NetworkProblemDetector.DefaultPeriod.Duration
@@ -119,9 +122,15 @@ func (a *actuator) createShootResources(ctx context.Context, log logr.Logger, cl
 		if a.serviceConfig.NetworkProblemDetector.PSPDisabled != nil {
 			pspDisabledByConfig = *a.serviceConfig.NetworkProblemDetector.PSPDisabled
 		}
+		if a.serviceConfig.NetworkProblemDetector.PingEnabled != nil {
+			pingEnabled = !*a.serviceConfig.NetworkProblemDetector.PingEnabled
+		}
+		if a.serviceConfig.NetworkProblemDetector.K8sExporter != nil && a.serviceConfig.NetworkProblemDetector.K8sExporter.Enabled {
+			k8sExporter = a.serviceConfig.NetworkProblemDetector.K8sExporter
+		}
 	}
 
-	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, !pspDisabled && !pspDisabledByConfig)
+	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, !pspDisabled && !pspDisabledByConfig, k8sExporter)
 	if err != nil {
 		return err
 	}
@@ -241,7 +250,7 @@ func (a *actuator) InjectScheme(scheme *runtime.Scheme) error {
 	return nil
 }
 
-func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled, pspEnabled bool) (map[string][]byte, error) {
+func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled, pspEnabled bool, k8sExporter *config.K8sExporter) (map[string][]byte, error) {
 	shootRegistry := managedresources.NewRegistry(kubernetes.ShootScheme, kubernetes.ShootCodec, kubernetes.ShootSerializer)
 
 	image, err := imagevector.ImageVector().FindImage(constants.AgentImageName)
@@ -255,6 +264,21 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 		PodSecurityPolicyEnabled: pspEnabled,
 		PingEnabled:              pingEnabled,
 		PriorityClassName:        corev1betaconstants.PriorityClassNameShootSystem900,
+		AdditionalLabels: map[string]string{
+			"networking.gardener.cloud/to-apiserver":        "allowed",
+			"networking.gardener.cloud/to-dns":              "allowed",
+			"networking.gardener.cloud/to-from-nwpd-agents": "allowed",
+		},
+	}
+	if k8sExporter != nil && k8sExporter.Enabled {
+		deployConfig.K8sExporterEnabled = true
+		deployConfig.K8sExporterHeartbeat = 3 * time.Minute
+		if k8sExporter.HeartbeatPeriod != nil {
+			if k8sExporter.HeartbeatPeriod.Duration < 1*time.Minute {
+				return nil, fmt.Errorf("Invalid k8sExporter.heartbeatPeriod. Must be >= 1m")
+			}
+			deployConfig.K8sExporterHeartbeat = k8sExporter.HeartbeatPeriod.Duration
+		}
 	}
 	objs, err := deploy.DeployNetworkProblemDetectorAgent(deployConfig)
 	if err != nil {
@@ -265,6 +289,10 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 	for _, obj := range objs {
 		objects = append(objects, obj.(client.Object))
 	}
+
+	networkPolicy := buildAgentNetworkPolicy()
+	objects = append(objects, networkPolicy)
+
 	clusterCM, err := buildDefaultClusterConfigMap()
 	if err != nil {
 		return nil, err
@@ -282,6 +310,55 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 		return nil, err
 	}
 	return shootResources, nil
+}
+
+func buildAgentNetworkPolicy() client.Object {
+	tcp := corev1.ProtocolTCP
+	podGRPCPort := intstr.FromInt(common.PodNetPodGRPCPort)
+	podHttpPort := intstr.FromInt(common.PodNetPodHttpPort)
+	hostGRPCPort := intstr.FromInt(common.HostNetPodGRPCPort)
+	return &networkingv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "gardener.cloud--allow-to-from-nwpd-agents",
+			Namespace: constants.NamespaceKubeSystem,
+		},
+		Spec: networkingv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"networking.gardener.cloud/to-from-nwpd-agents": "allowed",
+				},
+			},
+			Egress: []networkingv1.NetworkPolicyEgressRule{
+				{
+					Ports: []networkingv1.NetworkPolicyPort{
+						{
+							Protocol: &tcp,
+							Port:     &podGRPCPort,
+						},
+						{
+							Protocol: &tcp,
+							Port:     &hostGRPCPort,
+						},
+					},
+				},
+			},
+			Ingress: []networkingv1.NetworkPolicyIngressRule{
+				{
+					Ports: []networkingv1.NetworkPolicyPort{
+						{
+							Protocol: &tcp,
+							Port:     &podGRPCPort,
+						},
+						{
+							Protocol: &tcp,
+							Port:     &podHttpPort,
+						},
+					},
+				},
+			},
+			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeEgress, networkingv1.PolicyTypeIngress},
+		},
+	}
 }
 
 func buildDefaultAgentConfigMap(deployConfig *deploy.AgentDeployConfig) (*corev1.ConfigMap, error) {
