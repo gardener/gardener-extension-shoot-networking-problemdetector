@@ -14,10 +14,12 @@ import (
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/imagevector"
+
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"github.com/gardener/gardener/extensions/pkg/util"
 	corev1betaconstants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
+	gardencorev1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	resourcesv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 	"github.com/gardener/gardener/pkg/chartrenderer"
@@ -66,8 +68,19 @@ func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, ex *extension
 		return err
 	}
 
+	pspDisabled := false
+	if a.serviceConfig.NetworkProblemDetector != nil {
+		if a.serviceConfig.NetworkProblemDetector.PSPDisabled != nil {
+			pspDisabled = *a.serviceConfig.NetworkProblemDetector.PSPDisabled
+		}
+	}
+
+	if gardencorev1beta1helper.IsPSPDisabled(cluster.Shoot) {
+		pspDisabled = true
+	}
+
 	if !controller.IsHibernated(cluster) {
-		if err := a.createShootResources(ctx, log, cluster, namespace); err != nil {
+		if err := a.createShootResources(ctx, log, cluster, namespace, pspDisabled); err != nil {
 			return err
 		}
 	}
@@ -106,20 +119,16 @@ func (a *actuator) createSeedResources(ctx context.Context, log logr.Logger, clu
 	return a.createManagedResource(ctx, namespace, constants.ManagedResourceNamesControllerSeed, "seed", renderer, constants.NetworkProblemDetectorControllerChartNameSeed, namespace, values, nil)
 }
 
-func (a *actuator) createShootResources(ctx context.Context, log logr.Logger, cluster *controller.Cluster, namespace string) error {
+func (a *actuator) createShootResources(ctx context.Context, log logr.Logger, cluster *controller.Cluster, namespace string, pspDisabled bool) error {
 	defaultPeriod := 10 * time.Second
-	pspEnabled := true
 	pingEnabled := false
 	if a.serviceConfig.NetworkProblemDetector != nil {
 		if a.serviceConfig.NetworkProblemDetector.DefaultPeriod != nil {
 			defaultPeriod = a.serviceConfig.NetworkProblemDetector.DefaultPeriod.Duration
 		}
-		if a.serviceConfig.NetworkProblemDetector.PSPDisabled != nil {
-			pspEnabled = !*a.serviceConfig.NetworkProblemDetector.PSPDisabled
-		}
 	}
 
-	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, pspEnabled)
+	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, !pspDisabled)
 	if err != nil {
 		return err
 	}
