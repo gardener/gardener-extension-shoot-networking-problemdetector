@@ -317,6 +317,7 @@ func buildAgentNetworkPolicy() client.Object {
 	podGRPCPort := intstr.FromInt(common.PodNetPodGRPCPort)
 	podHttpPort := intstr.FromInt(common.PodNetPodHttpPort)
 	hostGRPCPort := intstr.FromInt(common.HostNetPodGRPCPort)
+	hostHttpPort := intstr.FromInt(common.HostNetPodHttpPort)
 	return &networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "gardener.cloud--allow-to-from-nwpd-agents",
@@ -335,6 +336,17 @@ func buildAgentNetworkPolicy() client.Object {
 							Protocol: &tcp,
 							Port:     &podGRPCPort,
 						},
+					},
+					To: []networkingv1.NetworkPolicyPeer{
+						{
+							PodSelector: &metav1.LabelSelector{
+								MatchLabels: map[string]string{"gardener.cloud/role": "network-problem-detector"},
+							},
+						},
+					},
+				},
+				{
+					Ports: []networkingv1.NetworkPolicyPort{
 						{
 							Protocol: &tcp,
 							Port:     &hostGRPCPort,
@@ -352,6 +364,14 @@ func buildAgentNetworkPolicy() client.Object {
 						{
 							Protocol: &tcp,
 							Port:     &podHttpPort,
+						},
+						{
+							Protocol: &tcp,
+							Port:     &hostGRPCPort,
+						},
+						{
+							Protocol: &tcp,
+							Port:     &hostHttpPort,
 						},
 					},
 				},
