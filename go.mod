@@ -150,9 +150,3 @@ replace (
 	k8s.io/code-generator => k8s.io/code-generator v0.24.2
 	k8s.io/component-base => k8s.io/component-base v0.24.2
 )
-
-// workaround for https://github.com/gardener/hvpa-controller/issues/92, remove once it's fixed
-replace (
-	github.com/gardener/hvpa-controller => github.com/gardener/hvpa-controller v0.4.0
-	github.com/gardener/hvpa-controller/api => github.com/gardener/hvpa-controller/api v0.4.0
-)
