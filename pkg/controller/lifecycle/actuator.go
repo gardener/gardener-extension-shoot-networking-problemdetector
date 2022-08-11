@@ -36,7 +36,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const (
@@ -47,7 +46,6 @@ const (
 // NewActuator returns an actuator responsible for Extension resources.
 func NewActuator(config config.Configuration) extension.Actuator {
 	return &actuator{
-		logger:        log.Log.WithName(ActuatorName),
 		serviceConfig: config,
 	}
 }
@@ -57,11 +55,10 @@ type actuator struct {
 	config        *rest.Config
 	decoder       runtime.Decoder
 	serviceConfig config.Configuration
-	logger        logr.Logger
 }
 
 // Reconcile the Extension resource.
-func (a *actuator) Reconcile(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
+func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 
 	cluster, err := controller.GetCluster(ctx, a.client, namespace)
@@ -70,19 +67,19 @@ func (a *actuator) Reconcile(ctx context.Context, ex *extensionsv1alpha1.Extensi
 	}
 
 	if !controller.IsHibernated(cluster) {
-		if err := a.createShootResources(ctx, cluster, namespace); err != nil {
+		if err := a.createShootResources(ctx, log, cluster, namespace); err != nil {
 			return err
 		}
 	}
 
-	if err := a.createSeedResources(ctx, cluster, namespace); err != nil {
+	if err := a.createSeedResources(ctx, log, cluster, namespace); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (a *actuator) createSeedResources(ctx context.Context, cluster *controller.Cluster, namespace string) error {
+func (a *actuator) createSeedResources(ctx context.Context, log logr.Logger, cluster *controller.Cluster, namespace string) error {
 	values := map[string]interface{}{
 		"replicaCount":                     controller.GetReplicas(cluster, 1),
 		"genericTokenKubeconfigSecretName": extensions.GenericTokenKubeconfigSecretNameFromCluster(cluster),
@@ -104,12 +101,12 @@ func (a *actuator) createSeedResources(ctx context.Context, cluster *controller.
 		return fmt.Errorf("could not create chart renderer: %w", err)
 	}
 
-	a.logger.Info("Component is being applied", "component", "network-problem-detector-controller", "namespace", namespace)
+	log.Info("Component is being applied", "component", "network-problem-detector-controller", "namespace", namespace)
 
 	return a.createManagedResource(ctx, namespace, constants.ManagedResourceNamesControllerSeed, "seed", renderer, constants.NetworkProblemDetectorControllerChartNameSeed, namespace, values, nil)
 }
 
-func (a *actuator) createShootResources(ctx context.Context, cluster *controller.Cluster, namespace string) error {
+func (a *actuator) createShootResources(ctx context.Context, log logr.Logger, cluster *controller.Cluster, namespace string) error {
 	defaultPeriod := 10 * time.Second
 	pspEnabled := true
 	pingEnabled := false
@@ -158,19 +155,19 @@ func (a *actuator) createManagedResource(ctx context.Context, namespace, name, c
 }
 
 // Delete the Extension resource.
-func (a *actuator) Delete(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
+func (a *actuator) Delete(ctx context.Context, log logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 
-	err := a.deleteShootResources(ctx, namespace)
+	err := a.deleteShootResources(ctx, log, namespace)
 	if err != nil {
 		return err
 	}
 
-	return a.deleteSeedResources(ctx, namespace)
+	return a.deleteSeedResources(ctx, log, namespace)
 }
 
-func (a *actuator) deleteShootResources(ctx context.Context, namespace string) error {
-	a.logger.Info("Deleting managed resource for shoot", "namespace", namespace)
+func (a *actuator) deleteShootResources(ctx context.Context, log logr.Logger, namespace string) error {
+	log.Info("Deleting managed resource for shoot", "namespace", namespace)
 	if err := managedresources.DeleteForShoot(ctx, a.client, namespace, constants.ManagedResourceNamesAgentShoot); err != nil {
 		return err
 	}
@@ -189,8 +186,8 @@ func (a *actuator) deleteShootResources(ctx context.Context, namespace string) e
 	return nil
 }
 
-func (a *actuator) deleteSeedResources(ctx context.Context, namespace string) error {
-	a.logger.Info("Deleting managed resource for seed", "namespace", namespace)
+func (a *actuator) deleteSeedResources(ctx context.Context, log logr.Logger, namespace string) error {
+	log.Info("Deleting managed resource for seed", "namespace", namespace)
 
 	if err := kutil.DeleteObject(ctx, a.client, &corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: gutil.SecretNamePrefixShootAccess + constants.ShootAccessSecretName, Namespace: namespace}}); err != nil {
 		return err
@@ -206,12 +203,12 @@ func (a *actuator) deleteSeedResources(ctx context.Context, namespace string) er
 }
 
 // Restore the Extension resource.
-func (a *actuator) Restore(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
-	return a.Reconcile(ctx, ex)
+func (a *actuator) Restore(ctx context.Context, log logr.Logger, ex *extensionsv1alpha1.Extension) error {
+	return a.Reconcile(ctx, log, ex)
 }
 
 // Migrate the Extension resource.
-func (a *actuator) Migrate(ctx context.Context, ex *extensionsv1alpha1.Extension) error {
+func (a *actuator) Migrate(ctx context.Context, log logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	// Keep objects for shoot managed resources so that they are not deleted from the shoot during the migration
 	if err := managedresources.SetKeepObjects(ctx, a.client, ex.GetNamespace(), constants.ManagedResourceNamesAgentShoot, true); err != nil {
 		return err
@@ -221,7 +218,7 @@ func (a *actuator) Migrate(ctx context.Context, ex *extensionsv1alpha1.Extension
 		return err
 	}
 
-	return a.Delete(ctx, ex)
+	return a.Delete(ctx, log, ex)
 }
 
 // InjectConfig injects the rest config to this actuator.
