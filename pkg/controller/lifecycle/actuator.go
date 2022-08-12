@@ -68,19 +68,8 @@ func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, ex *extension
 		return err
 	}
 
-	pspDisabled := false
-	if a.serviceConfig.NetworkProblemDetector != nil {
-		if a.serviceConfig.NetworkProblemDetector.PSPDisabled != nil {
-			pspDisabled = *a.serviceConfig.NetworkProblemDetector.PSPDisabled
-		}
-	}
-
-	if gardencorev1beta1helper.IsPSPDisabled(cluster.Shoot) {
-		pspDisabled = true
-	}
-
 	if !controller.IsHibernated(cluster) {
-		if err := a.createShootResources(ctx, log, cluster, namespace, pspDisabled); err != nil {
+		if err := a.createShootResources(ctx, log, cluster, namespace, gardencorev1beta1helper.IsPSPDisabled(cluster.Shoot)); err != nil {
 			return err
 		}
 	}
@@ -121,14 +110,18 @@ func (a *actuator) createSeedResources(ctx context.Context, log logr.Logger, clu
 
 func (a *actuator) createShootResources(ctx context.Context, log logr.Logger, cluster *controller.Cluster, namespace string, pspDisabled bool) error {
 	defaultPeriod := 10 * time.Second
+	pspDisabledByConfig := false
 	pingEnabled := false
 	if a.serviceConfig.NetworkProblemDetector != nil {
 		if a.serviceConfig.NetworkProblemDetector.DefaultPeriod != nil {
 			defaultPeriod = a.serviceConfig.NetworkProblemDetector.DefaultPeriod.Duration
 		}
+		if a.serviceConfig.NetworkProblemDetector.PSPDisabled != nil {
+			pspDisabledByConfig = *a.serviceConfig.NetworkProblemDetector.PSPDisabled
+		}
 	}
 
-	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, !pspDisabled)
+	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, !pspDisabled && !pspDisabledByConfig)
 	if err != nil {
 		return err
 	}
