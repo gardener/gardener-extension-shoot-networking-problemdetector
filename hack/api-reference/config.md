@@ -72,6 +72,50 @@ github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1.HealthCheckConf
 </tr>
 </tbody>
 </table>
+<h3 id="shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.K8sExporter">K8sExporter
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.NetworkProblemDetector">NetworkProblemDetector</a>)
+</p>
+<p>
+<p>K8sExporter contains information for the K8s exporter which patches the node conditions periodically if enabled.</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>enabled</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<p>Enabled if true, the K8s exporter is active</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>heartbeatPeriod</code></br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.15/#duration-v1-meta">
+Kubernetes meta/v1.Duration
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>HeartbeatPeriod defines the update frequency of the node conditions.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.NetworkProblemDetector">NetworkProblemDetector
 </h3>
 <p>
@@ -125,6 +169,20 @@ bool
 <td>
 <em>(Optional)</em>
 <p>PingEnabled is a flag if ICMP ping checks should be performed.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>k8sExporter</code></br>
+<em>
+<a href="#shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.K8sExporter">
+K8sExporter
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>K8sExporter configures the K8s exporter for updating node conditions and creating events.</p>
 </td>
 </tr>
 </tbody>

@@ -20,7 +20,7 @@ import (
 
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
-	. "github.com/gardener/gardener/pkg/utils/test/matchers"
+	"github.com/gardener/gardener/pkg/utils/test/matchers"
 	"github.com/gardener/gardener/test/framework"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -68,7 +68,7 @@ var _ = Describe("Shoot networking problem detector testing", func() {
 		// Verify that the egress filter applier daemonset does not exist
 		err = f.ShootClient.Client().Get(ctx, client.ObjectKey{Namespace: constants.NamespaceKubeSystem, Name: constants.ApplicationName}, ds)
 		Expect(err).To(HaveOccurred())
-		Expect(err).To(BeNotFoundError())
+		Expect(err).To(matchers.BeNotFoundError())
 	}, timeout)
 })
 

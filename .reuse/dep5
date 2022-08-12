@@ -20,7 +20,7 @@ Files:
   example/*
   hack/api-reference/config.json
   vendor/modules.txt
-  vendor/github.com/gardener/network-problem-detector/pkg/deploy/DEFAULT_IMAGE
+  vendor/github.com/gardener/network-problem-detector/pkg/deploy/DEFAULT_REPOSITORY
   VERSION
 Copyright: 2022 SAP SE or an SAP affiliate company and Gardener contributors
 License: Apache-2.0
@@ -173,6 +173,10 @@ Files: vendor/github.com/golang/snappy/*
 Copyright: Copyright 2016 The Go Authors
 License: BSD-3-Clause
 
+Files: vendor/github.com/google/gnostic/*
+Copyright: Copyright 2017 Google LLC.
+License: Apache-2.0
+
 Files: vendor/github.com/google/go-cmp/*
 Copyright: Copyright 2017, The Go Authors
 License: BSD-3-Clause
@@ -289,6 +293,10 @@ License: Apache-2.0
 Files: vendor/github.com/modern-go/reflect2/*
 Copyright: n/a
 License: Apache-2.0
+
+Files: vendor/github.com/munnerz/goautoneg/*
+Copyright: Copyright (c) 2011, Open Knowledge Foundation Ltd.
+License: BSD-3-Clause
 
 Files: vendor/github.com/nwaples/rardecode/*
 Copyright: Copyright (c) 2015, Nicholas Waples
