@@ -269,6 +269,8 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 			"networking.gardener.cloud/to-dns":              "allowed",
 			"networking.gardener.cloud/to-from-nwpd-agents": "allowed",
 		},
+		// projected service account token is provided by the resource manager
+		DisableAutomountServiceAccountTokenForAgents: true,
 	}
 	if k8sExporter != nil && k8sExporter.Enabled {
 		deployConfig.K8sExporterEnabled = true
