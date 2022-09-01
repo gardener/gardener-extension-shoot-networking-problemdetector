@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.2.0
-	github.com/gardener/gardener v1.52.2
+	github.com/gardener/gardener v1.54.0
 	github.com/gardener/network-problem-detector v0.7.0
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo/v2 v2.1.4
@@ -12,11 +12,11 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	golang.org/x/tools v0.1.12
-	k8s.io/api v0.24.3
-	k8s.io/apimachinery v0.24.3
+	k8s.io/api v0.24.4
+	k8s.io/apimachinery v0.24.4
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
-	k8s.io/code-generator v0.24.3
-	k8s.io/component-base v0.24.3
+	k8s.io/code-generator v0.24.4
+	k8s.io/component-base v0.24.4
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed
 	sigs.k8s.io/controller-runtime v0.12.1
 )
@@ -38,8 +38,7 @@ require (
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/gardener/etcd-druid v0.9.0 // indirect
-	github.com/gardener/external-dns-management v0.7.18 // indirect
+	github.com/gardener/etcd-druid v0.12.3 // indirect
 	github.com/gardener/hvpa-controller/api v0.5.0 // indirect
 	github.com/gardener/machine-controller-manager v0.45.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -122,16 +121,16 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	istio.io/api v0.0.0-20220512181135-e8ec1e1d89de // indirect
 	istio.io/client-go v1.14.0 // indirect
-	k8s.io/apiextensions-apiserver v0.24.3 // indirect
-	k8s.io/apiserver v0.24.3 // indirect
+	k8s.io/apiextensions-apiserver v0.24.4 // indirect
+	k8s.io/apiserver v0.24.4 // indirect
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.11.0 // indirect
 	k8s.io/gengo v0.0.0-20211129171323-c02415ce4185 // indirect
 	k8s.io/helm v2.16.1+incompatible // indirect
 	k8s.io/klog v1.0.0 // indirect
 	k8s.io/klog/v2 v2.70.1 // indirect
-	k8s.io/kube-aggregator v0.24.3 // indirect
+	k8s.io/kube-aggregator v0.24.4 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
-	k8s.io/metrics v0.24.3 // indirect
+	k8s.io/metrics v0.24.4 // indirect
 	sigs.k8s.io/controller-runtime/tools/setup-envtest v0.0.0-20220613074012-11e533d55213 // indirect
 	sigs.k8s.io/controller-tools v0.9.0 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
@@ -140,12 +139,12 @@ require (
 )
 
 replace (
-	k8s.io/api => k8s.io/api v0.24.3
-	k8s.io/apimachinery => k8s.io/apimachinery v0.24.3
-	k8s.io/apiserver => k8s.io/apiserver v0.24.3
+	k8s.io/api => k8s.io/api v0.24.4
+	k8s.io/apimachinery => k8s.io/apimachinery v0.24.4
+	k8s.io/apiserver => k8s.io/apiserver v0.24.4
 	k8s.io/autoscaler => k8s.io/autoscaler v0.0.0-20220531185024-cc90d57b7fe1 // translates to k8s.io/autoscaler/vertical-pod-autoscaler@v0.11.0
 	k8s.io/autoscaler/vertical-pod-autoscaler => k8s.io/autoscaler/vertical-pod-autoscaler v0.11.0
-	k8s.io/client-go => k8s.io/client-go v0.24.3
-	k8s.io/code-generator => k8s.io/code-generator v0.24.3
-	k8s.io/component-base => k8s.io/component-base v0.24.3
+	k8s.io/client-go => k8s.io/client-go v0.24.4
+	k8s.io/code-generator => k8s.io/code-generator v0.24.4
+	k8s.io/component-base => k8s.io/component-base v0.24.4
 )
