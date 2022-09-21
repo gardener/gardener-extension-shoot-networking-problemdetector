@@ -1,0 +1,10 @@
+run:
+  concurrency: 4
+  deadline: 10m
+
+skip-files:
+  - "zz_generated\\..*\\.go$"
+
+linters:
+  disable:
+  - unused

@@ -6,7 +6,7 @@ package cmd
 
 import (
 	"errors"
-	"io/ioutil"
+	"os"
 
 	apisconfig "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config/v1alpha1"
@@ -52,7 +52,7 @@ func (o *NetworkProblemDetectorOptions) Complete() error {
 	if o.ConfigLocation == "" {
 		return errors.New("config location is not set")
 	}
-	data, err := ioutil.ReadFile(o.ConfigLocation)
+	data, err := os.ReadFile(o.ConfigLocation)
 	if err != nil {
 		return err
 	}
