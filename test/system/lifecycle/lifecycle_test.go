@@ -47,7 +47,7 @@ var _ = Describe("Shoot networking problem detector testing", func() {
 
 	AfterEach(func() {
 		// Revert to initial extension configuration
-		f.UpdateShoot(context.Background(), func(shoot *gardencorev1beta1.Shoot) error {
+		_ = f.UpdateShoot(context.Background(), func(shoot *gardencorev1beta1.Shoot) error {
 			shoot.Spec.Extensions = initialExtensionConfig
 			return nil
 		})
@@ -62,8 +62,9 @@ var _ = Describe("Shoot networking problem detector testing", func() {
 		err = f.ShootClient.Client().Get(ctx, client.ObjectKey{Namespace: constants.NamespaceKubeSystem, Name: constants.ApplicationName}, ds)
 		Expect(err).ToNot(HaveOccurred())
 
-		// Ensure that the OIDC service is disabled in order to verify the deletion process
-		f.UpdateShoot(ctx, ensureShootNetworkingFilterIsDisabled)
+		// Ensure that the networking filter is disabled in order to verify the deletion process
+		err = f.UpdateShoot(ctx, ensureShootNetworkingFilterIsDisabled)
+		Expect(err).NotTo(HaveOccurred())
 
 		// Verify that the egress filter applier daemonset does not exist
 		err = f.ShootClient.Client().Get(ctx, client.ObjectKey{Namespace: constants.NamespaceKubeSystem, Name: constants.ApplicationName}, ds)

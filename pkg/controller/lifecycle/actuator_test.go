@@ -31,11 +31,12 @@ var _ = Describe("activator methods", func() {
 		Expect(err).To(BeNil())
 		Expect(len(objs)).NotTo(BeZero())
 		var ds *appsv1.DaemonSet
+	loop:
 		for _, obj := range objs {
 			switch v := obj.(type) {
 			case *appsv1.DaemonSet:
 				ds = v
-				break
+				break loop
 			}
 		}
 		Expect(ds).NotTo(BeNil())

@@ -11,11 +11,12 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/Masterminds/semver"
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/charts"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/imagevector"
 
+	"github.com/Masterminds/semver"
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"github.com/gardener/gardener/extensions/pkg/util"
@@ -161,8 +162,8 @@ func (a *actuator) createShootResources(ctx context.Context, log logr.Logger, cl
 }
 
 func (a *actuator) createManagedResource(ctx context.Context, namespace, name, class string, renderer chartrenderer.Interface, chartName, chartNamespace string, chartValues map[string]interface{}, injectedLabels map[string]string) error {
-	chartPath := filepath.Join(constants.ChartsPath, chartName)
-	chart, err := renderer.Render(chartPath, chartName, chartNamespace, chartValues)
+	chartPath := filepath.Join(charts.ChartsPath, chartName)
+	chart, err := renderer.RenderEmbeddedFS(charts.Internal, chartPath, chartName, chartNamespace, chartValues)
 	if err != nil {
 		return err
 	}

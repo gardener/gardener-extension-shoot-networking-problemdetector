@@ -4,8 +4,6 @@
 
 package constants
 
-import "path/filepath"
-
 const (
 	// ExtensionType is the name of the extension type.
 	ExtensionType = "shoot-networking-problemdetector"
@@ -40,6 +38,3 @@ const (
 	// NetworkProblemDetectorControllerChartNameShoot is the chart name for nwpd controller resources in the shoot.
 	NetworkProblemDetectorControllerChartNameShoot = "shoot-network-problem-detector-controller-shoot"
 )
-
-// ChartsPath is the path to the charts
-var ChartsPath = filepath.Join("charts", "internal")
