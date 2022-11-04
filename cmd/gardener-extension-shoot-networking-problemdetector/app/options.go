@@ -9,6 +9,7 @@ import (
 
 	pfcmd "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/cmd"
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
+	heartbeatcmd "github.com/gardener/gardener/extensions/pkg/controller/heartbeat/cmd"
 )
 
 // ExtensionName is the name of the extension.
@@ -23,6 +24,7 @@ type Options struct {
 	controllerOptions  *controllercmd.ControllerOptions
 	lifecycleOptions   *controllercmd.ControllerOptions
 	healthOptions      *controllercmd.ControllerOptions
+	heartbeatOptions   *heartbeatcmd.Options
 	controllerSwitches *controllercmd.SwitchOptions
 	reconcileOptions   *controllercmd.ReconcilerOptions
 	optionAggregator   controllercmd.OptionAggregator
@@ -52,6 +54,12 @@ func NewOptions() *Options {
 			// This is a default value.
 			MaxConcurrentReconciles: 5,
 		},
+		heartbeatOptions: &heartbeatcmd.Options{
+			// This is a default value.
+			ExtensionName:        ExtensionName,
+			RenewIntervalSeconds: 30,
+			Namespace:            os.Getenv("LEADER_ELECTION_NAMESPACE"),
+		},
 		reconcileOptions:   &controllercmd.ReconcilerOptions{},
 		controllerSwitches: pfcmd.ControllerSwitches(),
 	}
@@ -64,6 +72,7 @@ func NewOptions() *Options {
 		options.controllerOptions,
 		controllercmd.PrefixOption("lifecycle-", options.lifecycleOptions),
 		controllercmd.PrefixOption("healthcheck-", options.healthOptions),
+		controllercmd.PrefixOption("heartbeat-", options.heartbeatOptions),
 		options.controllerSwitches,
 		options.reconcileOptions,
 	)
