@@ -27,4 +27,5 @@ affinity: {}
 # priorityClassName: ""
 
 configuration:
-  serverPortHttp: 10258
+  metricsPort: 10258
+  healthProbePort: 10259
