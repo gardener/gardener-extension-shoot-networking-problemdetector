@@ -23,6 +23,29 @@ rules:
   - get
   resourceNames:
   - kubernetes
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - create
+  - list
+  - watch
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  resourceNames:
+  - network-problem-detector-controller-leader-election
+  verbs:
+  - update
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - "events"
+  verbs:
+  - "create"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
