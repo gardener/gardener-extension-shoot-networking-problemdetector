@@ -45,11 +45,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const (
-	// ActuatorName is the name of the Networking Policy Filter actuator.
-	ActuatorName = constants.ServiceName + "-actuator"
-)
-
 // NewActuator returns an actuator responsible for Extension resources.
 func NewActuator(config config.Configuration) extension.Actuator {
 	return &actuator{
@@ -74,7 +69,7 @@ func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, ex *extension
 	}
 
 	if !controller.IsHibernated(cluster) {
-		if err := a.createShootResources(ctx, log, cluster, namespace, gardencorev1beta1helper.IsPSPDisabled(cluster.Shoot)); err != nil {
+		if err := a.createShootResources(ctx, cluster, namespace, gardencorev1beta1helper.IsPSPDisabled(cluster.Shoot)); err != nil {
 			return err
 		}
 	}
@@ -113,7 +108,7 @@ func (a *actuator) createSeedResources(ctx context.Context, log logr.Logger, clu
 	return a.createManagedResource(ctx, namespace, constants.ManagedResourceNamesControllerSeed, "seed", renderer, constants.NetworkProblemDetectorControllerChartNameSeed, namespace, values, nil)
 }
 
-func (a *actuator) createShootResources(ctx context.Context, log logr.Logger, cluster *controller.Cluster, namespace string, pspDisabled bool) error {
+func (a *actuator) createShootResources(ctx context.Context, cluster *controller.Cluster, namespace string, pspDisabled bool) error {
 	defaultPeriod := 10 * time.Second
 	pspDisabledByConfig := false
 	pingEnabled := false
@@ -326,9 +321,7 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, defaultSe
 
 func buildAgentNetworkPolicy() client.Object {
 	tcp := corev1.ProtocolTCP
-	podGRPCPort := intstr.FromInt(common.PodNetPodGRPCPort)
 	podHttpPort := intstr.FromInt(common.PodNetPodHttpPort)
-	hostGRPCPort := intstr.FromInt(common.HostNetPodGRPCPort)
 	hostHttpPort := intstr.FromInt(common.HostNetPodHttpPort)
 	return &networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
@@ -346,7 +339,7 @@ func buildAgentNetworkPolicy() client.Object {
 					Ports: []networkingv1.NetworkPolicyPort{
 						{
 							Protocol: &tcp,
-							Port:     &podGRPCPort,
+							Port:     &podHttpPort,
 						},
 					},
 					To: []networkingv1.NetworkPolicyPeer{
@@ -361,7 +354,7 @@ func buildAgentNetworkPolicy() client.Object {
 					Ports: []networkingv1.NetworkPolicyPort{
 						{
 							Protocol: &tcp,
-							Port:     &hostGRPCPort,
+							Port:     &hostHttpPort,
 						},
 					},
 				},
@@ -371,15 +364,7 @@ func buildAgentNetworkPolicy() client.Object {
 					Ports: []networkingv1.NetworkPolicyPort{
 						{
 							Protocol: &tcp,
-							Port:     &podGRPCPort,
-						},
-						{
-							Protocol: &tcp,
 							Port:     &podHttpPort,
-						},
-						{
-							Protocol: &tcp,
-							Port:     &hostGRPCPort,
 						},
 						{
 							Protocol: &tcp,
