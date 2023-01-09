@@ -16,7 +16,6 @@ import (
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/imagevector"
 
-	"github.com/Masterminds/semver"
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"github.com/gardener/gardener/extensions/pkg/util"
@@ -31,7 +30,6 @@ import (
 	gutil "github.com/gardener/gardener/pkg/utils/gardener"
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
 	managedresources "github.com/gardener/gardener/pkg/utils/managedresources"
-	versionutils "github.com/gardener/gardener/pkg/utils/version"
 	"github.com/gardener/network-problem-detector/pkg/common"
 	"github.com/gardener/network-problem-detector/pkg/deploy"
 	"github.com/go-logr/logr"
@@ -128,13 +126,7 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 		}
 	}
 
-	k8sVersion, err := semver.NewVersion(cluster.Shoot.Spec.Kubernetes.Version)
-	if err != nil {
-		return err
-	}
-	defaultSeccompProfileEnabled := versionutils.ConstraintK8sGreaterEqual119.Check(k8sVersion)
-
-	shootResources, err := a.getShootAgentResources(defaultPeriod, defaultSeccompProfileEnabled, pingEnabled, !pspDisabled && !pspDisabledByConfig, k8sExporter)
+	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, !pspDisabled && !pspDisabledByConfig, k8sExporter)
 	if err != nil {
 		return err
 	}
@@ -254,7 +246,7 @@ func (a *actuator) InjectScheme(scheme *runtime.Scheme) error {
 	return nil
 }
 
-func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, defaultSeccompProfileEnabled, pingEnabled, pspEnabled bool, k8sExporter *config.K8sExporter) (map[string][]byte, error) {
+func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled, pspEnabled bool, k8sExporter *config.K8sExporter) (map[string][]byte, error) {
 	shootRegistry := managedresources.NewRegistry(kubernetes.ShootScheme, kubernetes.ShootCodec, kubernetes.ShootSerializer)
 
 	image, err := imagevector.ImageVector().FindImage(constants.AgentImageName)
@@ -265,7 +257,7 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, defaultSe
 	deployConfig := &deploy.AgentDeployConfig{
 		Image:                        image.String(),
 		DefaultPeriod:                defaultPeriod,
-		DefaultSeccompProfileEnabled: defaultSeccompProfileEnabled,
+		DefaultSeccompProfileEnabled: true,
 		PodSecurityPolicyEnabled:     pspEnabled,
 		PingEnabled:                  pingEnabled,
 		PriorityClassName:            corev1betaconstants.PriorityClassNameShootSystem900,
