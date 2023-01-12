@@ -130,7 +130,7 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 	if err != nil {
 		return err
 	}
-	err = managedresources.CreateForShoot(ctx, a.client, namespace, constants.ManagedResourceNamesAgentShoot, false, shootResources)
+	err = managedresources.CreateForShoot(ctx, a.client, namespace, constants.ManagedResourceNamesAgentShoot, "gardener-extension-shoot-networking-problemdetector", false, shootResources)
 	if err != nil {
 		return err
 	}
