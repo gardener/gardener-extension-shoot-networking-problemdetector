@@ -79,6 +79,11 @@ func (in *NetworkProblemDetector) DeepCopyInto(out *NetworkProblemDetector) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.MaxPeerNodes != nil {
+		in, out := &in.MaxPeerNodes, &out.MaxPeerNodes
+		*out = new(int)
+		**out = **in
+	}
 	if in.PSPDisabled != nil {
 		in, out := &in.PSPDisabled, &out.PSPDisabled
 		*out = new(bool)

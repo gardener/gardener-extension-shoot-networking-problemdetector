@@ -142,7 +142,7 @@ github.com/gardener/hvpa-controller/api/v1alpha1
 ## explicit; go 1.17
 github.com/gardener/machine-controller-manager/pkg/apis/machine
 github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1
-# github.com/gardener/network-problem-detector v0.11.0
+# github.com/gardener/network-problem-detector v0.11.1-0.20230119154702-f88bf33be264
 ## explicit; go 1.19
 github.com/gardener/network-problem-detector/pkg/common
 github.com/gardener/network-problem-detector/pkg/common/config

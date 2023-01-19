@@ -28,9 +28,13 @@ type Configuration struct {
 
 // NetworkProblemDetector contains the configuration for the network problem detector.
 type NetworkProblemDetector struct {
-	// DefaultPeriod is the default period for jobs running in the agent.
+	// DefaultPeriod optionally overrides the default period for jobs running in the agent.
 	// +optional
 	DefaultPeriod *metav1.Duration `json:"defaultPeriod,omitempty"`
+
+	// MaxPeerNodes optionally overrides the MaxPeerNodes in the agent config (maximum number of is the default period for jobs running in the agent.
+	// +optional
+	MaxPeerNodes *int `json:"maxPeerNodes,omitempty"`
 
 	// PSPDisabled is a flag to disable pod security policy.
 	// +optional

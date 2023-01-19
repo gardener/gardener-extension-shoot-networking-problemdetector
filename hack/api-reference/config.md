@@ -144,7 +144,19 @@ Kubernetes meta/v1.Duration
 </td>
 <td>
 <em>(Optional)</em>
-<p>DefaultPeriod is the default period for jobs running in the agent.</p>
+<p>DefaultPeriod optionally overrides the default period for jobs running in the agent.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>maxPeerNodes</code></br>
+<em>
+int
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MaxPeerNodes optionally overrides the MaxPeerNodes in the agent config (maximum number of is the default period for jobs running in the agent.</p>
 </td>
 </tr>
 <tr>
