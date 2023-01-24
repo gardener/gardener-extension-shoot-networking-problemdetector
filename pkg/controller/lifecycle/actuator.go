@@ -283,6 +283,9 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 			}
 			deployConfig.K8sExporterHeartbeat = k8sExporter.HeartbeatPeriod.Duration
 		}
+		if k8sExporter.MinFailingPeerNodeShare != nil {
+			deployConfig.K8sExporterMinFailingPeerNodeShare = *k8sExporter.MinFailingPeerNodeShare
+		}
 	}
 	objs, err := deploy.DeployNetworkProblemDetectorAgent(deployConfig)
 	if err != nil {

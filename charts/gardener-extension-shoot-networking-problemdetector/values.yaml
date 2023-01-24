@@ -47,6 +47,7 @@ networkProblemDetector:
 #  maxPeerNodes: 7
 #  pspDisabled: false # pod security policy
 #  pingEnabled: false
-#  k8sExporter:
-#    enabled: false
+  k8sExporter:
+    enabled: false
 #    heartbeatPeriod: 3m
+    minFailingPeerNodeShare: 0.2

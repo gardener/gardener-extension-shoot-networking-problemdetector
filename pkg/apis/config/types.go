@@ -47,4 +47,6 @@ type K8sExporter struct {
 	Enabled bool
 	// HeartbeatPeriod defines the update frequency of the node conditions.
 	HeartbeatPeriod *metav1.Duration
+	// MinFailingPeerNodeShare if > 0, reports node conditions `ClusterNetworkProblems` or `HostNetworkProblems` for node checks only if minimum share of destination peer nodes are failing. Valid range: [0.0,1.0]
+	MinFailingPeerNodeShare *float64
 }

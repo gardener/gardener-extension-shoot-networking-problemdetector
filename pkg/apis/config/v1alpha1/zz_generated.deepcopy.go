@@ -58,6 +58,11 @@ func (in *K8sExporter) DeepCopyInto(out *K8sExporter) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.MinFailingPeerNodeShare != nil {
+		in, out := &in.MinFailingPeerNodeShare, &out.MinFailingPeerNodeShare
+		*out = new(float64)
+		**out = **in
+	}
 	return
 }
 
