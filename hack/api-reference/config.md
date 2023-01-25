@@ -114,6 +114,18 @@ Kubernetes meta/v1.Duration
 <p>HeartbeatPeriod defines the update frequency of the node conditions.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>minFailingPeerNodeShare</code></br>
+<em>
+float64
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MinFailingPeerNodeShare if &gt; 0, reports node conditions <code>ClusterNetworkProblems</code> or <code>HostNetworkProblems</code> for node checks only if minimum share of destination peer nodes are failing. Valid range: [0.0,1.0]</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.NetworkProblemDetector">NetworkProblemDetector
@@ -144,7 +156,19 @@ Kubernetes meta/v1.Duration
 </td>
 <td>
 <em>(Optional)</em>
-<p>DefaultPeriod is the default period for jobs running in the agent.</p>
+<p>DefaultPeriod optionally overrides the default period for jobs running in the agent.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>maxPeerNodes</code></br>
+<em>
+int
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>MaxPeerNodes optionally overrides the MaxPeerNodes in the agent config (maximum number of is the default period for jobs running in the agent.</p>
 </td>
 </tr>
 <tr>

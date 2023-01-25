@@ -85,6 +85,7 @@ func Convert_config_Configuration_To_v1alpha1_Configuration(in *config.Configura
 func autoConvert_v1alpha1_K8sExporter_To_config_K8sExporter(in *K8sExporter, out *config.K8sExporter, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.HeartbeatPeriod = (*v1.Duration)(unsafe.Pointer(in.HeartbeatPeriod))
+	out.MinFailingPeerNodeShare = (*float64)(unsafe.Pointer(in.MinFailingPeerNodeShare))
 	return nil
 }
 
@@ -96,6 +97,7 @@ func Convert_v1alpha1_K8sExporter_To_config_K8sExporter(in *K8sExporter, out *co
 func autoConvert_config_K8sExporter_To_v1alpha1_K8sExporter(in *config.K8sExporter, out *K8sExporter, s conversion.Scope) error {
 	out.Enabled = in.Enabled
 	out.HeartbeatPeriod = (*v1.Duration)(unsafe.Pointer(in.HeartbeatPeriod))
+	out.MinFailingPeerNodeShare = (*float64)(unsafe.Pointer(in.MinFailingPeerNodeShare))
 	return nil
 }
 
@@ -106,6 +108,7 @@ func Convert_config_K8sExporter_To_v1alpha1_K8sExporter(in *config.K8sExporter, 
 
 func autoConvert_v1alpha1_NetworkProblemDetector_To_config_NetworkProblemDetector(in *NetworkProblemDetector, out *config.NetworkProblemDetector, s conversion.Scope) error {
 	out.DefaultPeriod = (*v1.Duration)(unsafe.Pointer(in.DefaultPeriod))
+	out.MaxPeerNodes = (*int)(unsafe.Pointer(in.MaxPeerNodes))
 	out.PSPDisabled = (*bool)(unsafe.Pointer(in.PSPDisabled))
 	out.PingEnabled = (*bool)(unsafe.Pointer(in.PingEnabled))
 	out.K8sExporter = (*config.K8sExporter)(unsafe.Pointer(in.K8sExporter))
@@ -119,6 +122,7 @@ func Convert_v1alpha1_NetworkProblemDetector_To_config_NetworkProblemDetector(in
 
 func autoConvert_config_NetworkProblemDetector_To_v1alpha1_NetworkProblemDetector(in *config.NetworkProblemDetector, out *NetworkProblemDetector, s conversion.Scope) error {
 	out.DefaultPeriod = (*v1.Duration)(unsafe.Pointer(in.DefaultPeriod))
+	out.MaxPeerNodes = (*int)(unsafe.Pointer(in.MaxPeerNodes))
 	out.PSPDisabled = (*bool)(unsafe.Pointer(in.PSPDisabled))
 	out.PingEnabled = (*bool)(unsafe.Pointer(in.PingEnabled))
 	out.K8sExporter = (*K8sExporter)(unsafe.Pointer(in.K8sExporter))

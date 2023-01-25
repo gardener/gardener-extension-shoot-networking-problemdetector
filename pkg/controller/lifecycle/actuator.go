@@ -107,13 +107,17 @@ func (a *actuator) createSeedResources(ctx context.Context, log logr.Logger, clu
 }
 
 func (a *actuator) createShootResources(ctx context.Context, cluster *controller.Cluster, namespace string, pspDisabled bool) error {
-	defaultPeriod := 10 * time.Second
+	defaultPeriod := 5 * time.Second
+	maxPeerNodes := 25
 	pspDisabledByConfig := false
 	pingEnabled := false
 	var k8sExporter *config.K8sExporter
 	if a.serviceConfig.NetworkProblemDetector != nil {
 		if a.serviceConfig.NetworkProblemDetector.DefaultPeriod != nil {
 			defaultPeriod = a.serviceConfig.NetworkProblemDetector.DefaultPeriod.Duration
+		}
+		if a.serviceConfig.NetworkProblemDetector.MaxPeerNodes != nil {
+			maxPeerNodes = *a.serviceConfig.NetworkProblemDetector.MaxPeerNodes
 		}
 		if a.serviceConfig.NetworkProblemDetector.PSPDisabled != nil {
 			pspDisabledByConfig = *a.serviceConfig.NetworkProblemDetector.PSPDisabled
@@ -126,7 +130,7 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 		}
 	}
 
-	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, !pspDisabled && !pspDisabledByConfig, k8sExporter)
+	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, !pspDisabled && !pspDisabledByConfig, k8sExporter, maxPeerNodes)
 	if err != nil {
 		return err
 	}
@@ -246,7 +250,7 @@ func (a *actuator) InjectScheme(scheme *runtime.Scheme) error {
 	return nil
 }
 
-func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled, pspEnabled bool, k8sExporter *config.K8sExporter) (map[string][]byte, error) {
+func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled, pspEnabled bool, k8sExporter *config.K8sExporter, maxPeerNodes int) (map[string][]byte, error) {
 	shootRegistry := managedresources.NewRegistry(kubernetes.ShootScheme, kubernetes.ShootCodec, kubernetes.ShootSerializer)
 
 	image, err := imagevector.ImageVector().FindImage(constants.AgentImageName)
@@ -257,6 +261,7 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 	deployConfig := &deploy.AgentDeployConfig{
 		Image:                        image.String(),
 		DefaultPeriod:                defaultPeriod,
+		MaxPeerNodes:                 maxPeerNodes,
 		DefaultSeccompProfileEnabled: true,
 		PodSecurityPolicyEnabled:     pspEnabled,
 		PingEnabled:                  pingEnabled,
@@ -277,6 +282,9 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 				return nil, fmt.Errorf("Invalid k8sExporter.heartbeatPeriod. Must be >= 1m")
 			}
 			deployConfig.K8sExporterHeartbeat = k8sExporter.HeartbeatPeriod.Duration
+		}
+		if k8sExporter.MinFailingPeerNodeShare != nil {
+			deployConfig.K8sExporterMinFailingPeerNodeShare = *k8sExporter.MinFailingPeerNodeShare
 		}
 	}
 	objs, err := deploy.DeployNetworkProblemDetectorAgent(deployConfig)

@@ -7,6 +7,7 @@ package deploy
 import (
 	_ "embed"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -51,6 +52,8 @@ type AgentDeployConfig struct {
 	K8sExporterEnabled bool
 	// K8sExporterHeartbeat if K8sExporterEnabled sets the period of updating the node condition `ClusterNetworkProblems` or `HostNetworkProblems`
 	K8sExporterHeartbeat time.Duration
+	// K8sExporterMinFailingPeerNodeShare if > 0, reports node conditions `ClusterNetworkProblems` or `HostNetworkProblems` for node checks only if minimum share of destination peer nodes are failing. Valid range: [0.0,1.0]
+	K8sExporterMinFailingPeerNodeShare float64
 	// AdditionalAnnotations adds annotations to the daemonset spec template
 	AdditionalAnnotations map[string]string
 	// AdditionalLabels adds labels to the daemonset spec template
@@ -58,6 +61,8 @@ type AgentDeployConfig struct {
 	// DisableAutomountServiceAccountTokenForAgents controls if automountServiceAccountToken should always be false for agents as it is provided
 	// by other means (e.g. https://github.com/gardener/gardener/blob/eb8400a2961400a8b984252a76eb546ea44432fd/docs/concepts/resource-manager.md#auto-mounting-projected-serviceaccount-tokens)
 	DisableAutomountServiceAccountTokenForAgents bool
+	// MaxPeerNodes if != 0 restricts number of peer nodes used as destinations for checks (nodes are selected randomly, but stable in this case)
+	MaxPeerNodes int
 }
 
 // DeployNetworkProblemDetectorAgent returns K8s resources to be created.
@@ -92,14 +97,16 @@ func (ac *AgentDeployConfig) AddImageFlag(imageTag string, flags *pflag.FlagSet)
 }
 
 func (ac *AgentDeployConfig) AddOptionFlags(flags *pflag.FlagSet) {
-	flags.DurationVar(&ac.DefaultPeriod, "default-period", 10*time.Second, "default period for jobs")
+	flags.DurationVar(&ac.DefaultPeriod, "default-period", 5*time.Second, "default period for jobs")
 	flags.BoolVar(&ac.DefaultSeccompProfileEnabled, "default-seccomp-profile", false, "if seccomp profile should be defaulted to RuntimeDefault for network-problem-detector pods")
 	flags.BoolVar(&ac.PingEnabled, "enable-ping", false, "if ICMP pings should be used in addition to TCP connection checks")
 	flags.BoolVar(&ac.PodSecurityPolicyEnabled, "enable-psp", true, "if pod security policy should be deployed")
 	flags.BoolVar(&ac.K8sExporterEnabled, "enable-k8s-exporter", false, "if node conditions and events should be updated/created")
 	flags.DurationVar(&ac.K8sExporterHeartbeat, "k8s-exporter-heartbeat", 3*time.Minute, "period for updating the node conditions by the K8s exporter")
+	flags.Float64Var(&ac.K8sExporterMinFailingPeerNodeShare, "k8s-exporter-min-failing-peer-node-share", 0.2, "if > 0, report node conditions only if checks for minimum share of destination peer nodes are failing. Valid range: [0.0,1.0]")
 	flags.BoolVar(&ac.IgnoreAPIServerEndpoint, "ignore-gardener-kube-api-server", false, "if true, does not try to lookup kube api-server of Gardener control plane")
 	flags.StringVar(&ac.PriorityClassName, "priority-class", "", "priority class name")
+	flags.IntVar(&ac.MaxPeerNodes, "max-peer-nodes", 0, "if != 0 restricts number of peer nodes used as check destinations")
 }
 
 func (ac *AgentDeployConfig) buildService(hostnetwork bool) (*corev1.Service, error) {
@@ -668,6 +675,7 @@ func (ac *AgentDeployConfig) buildPodSecurityPolicy(serviceAccountName string) (
 }
 
 func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
+	periodXL := fmt.Sprintf("%ds", imin(60, imax(1, int(ac.DefaultPeriod/time.Second))*2))
 	cfg := config.AgentConfig{
 		OutputDir:       common.PathOutputDir,
 		RetentionHours:  4,
@@ -691,7 +699,7 @@ func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
 				},
 				{
 					JobID: "nslookup-n",
-					Args:  []string{"nslookup", "--names", "eu.gcr.io.", "--period", "1m"},
+					Args:  []string{"nslookup", "--names", "eu.gcr.io.", "--scale-period"},
 				},
 			},
 		},
@@ -706,7 +714,7 @@ func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
 				},
 				{
 					JobID: "https-p2api-int",
-					Args:  []string{"checkHTTPSGet", "--endpoint-internal-kube-apiserver", "--period", "1m", "--scale-period"},
+					Args:  []string{"checkHTTPSGet", "--endpoint-internal-kube-apiserver", "--scale-period"},
 				},
 				{
 					JobID: "tcp-p2n",
@@ -718,7 +726,7 @@ func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
 				},
 				{
 					JobID: "nslookup-p",
-					Args:  []string{"nslookup", "--names", "eu.gcr.io.", "--name-internal-kube-apiserver", "--period", "1m"},
+					Args:  []string{"nslookup", "--names", "eu.gcr.io.", "--name-internal-kube-apiserver", "--scale-period"},
 				},
 			},
 		},
@@ -726,8 +734,9 @@ func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
 
 	if ac.K8sExporterEnabled {
 		cfg.K8sExporter = &config.K8sExporterConfig{
-			Enabled:         true,
-			HeartbeatPeriod: &metav1.Duration{Duration: ac.K8sExporterHeartbeat},
+			Enabled:                 true,
+			HeartbeatPeriod:         &metav1.Duration{Duration: ac.K8sExporterHeartbeat},
+			MinFailingPeerNodeShare: math.Min(math.Max(0.0, ac.K8sExporterMinFailingPeerNodeShare), 1.0),
 		}
 	}
 
@@ -753,7 +762,7 @@ func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
 			},
 			config.Job{
 				JobID: "https-n2api-ext",
-				Args:  []string{"checkHTTPSGet", "--endpoint-external-kube-apiserver", "--period", "1m", "--scale-period"},
+				Args:  []string{"checkHTTPSGet", "--endpoint-external-kube-apiserver", "--scale-period", "--period", periodXL},
 			})
 		cfg.PodNetwork.Jobs = append(cfg.PodNetwork.Jobs,
 			config.Job{
@@ -762,7 +771,7 @@ func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
 			},
 			config.Job{
 				JobID: "https-p2api-ext",
-				Args:  []string{"checkHTTPSGet", "--endpoint-external-kube-apiserver", "--period", "1m", "--scale-period"},
+				Args:  []string{"checkHTTPSGet", "--endpoint-external-kube-apiserver", "--scale-period", "--period", periodXL},
 			})
 	}
 	if ac.PingEnabled {
@@ -777,6 +786,8 @@ func (ac *AgentDeployConfig) BuildAgentConfig() (*config.AgentConfig, error) {
 				Args:  []string{"pingHost"},
 			})
 	}
+
+	cfg.MaxPeerNodes = ac.MaxPeerNodes
 
 	return &cfg, nil
 }
@@ -820,4 +831,18 @@ func imagePullPolicyByImage(image string) corev1.PullPolicy {
 		return corev1.PullAlways
 	}
 	return corev1.PullIfNotPresent
+}
+
+func imin(a, b int) int {
+	if a <= b {
+		return a
+	}
+	return b
+}
+
+func imax(a, b int) int {
+	if a >= b {
+		return a
+	}
+	return b
 }

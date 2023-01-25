@@ -58,6 +58,11 @@ func (in *K8sExporter) DeepCopyInto(out *K8sExporter) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
+	if in.MinFailingPeerNodeShare != nil {
+		in, out := &in.MinFailingPeerNodeShare, &out.MinFailingPeerNodeShare
+		*out = new(float64)
+		**out = **in
+	}
 	return
 }
 
@@ -77,6 +82,11 @@ func (in *NetworkProblemDetector) DeepCopyInto(out *NetworkProblemDetector) {
 	if in.DefaultPeriod != nil {
 		in, out := &in.DefaultPeriod, &out.DefaultPeriod
 		*out = new(v1.Duration)
+		**out = **in
+	}
+	if in.MaxPeerNodes != nil {
+		in, out := &in.MaxPeerNodes, &out.MaxPeerNodes
+		*out = new(int)
 		**out = **in
 	}
 	if in.PSPDisabled != nil {

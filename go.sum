@@ -164,8 +164,8 @@ github.com/gardener/hvpa-controller/api v0.5.0 h1:f4F3O7YUrenwh4S3TgPREPiB287Jjj
 github.com/gardener/hvpa-controller/api v0.5.0/go.mod h1:QQl3ELkCaki+8RhXl0FZMfvnm0WCGwGJlGmrxJj6lvM=
 github.com/gardener/machine-controller-manager v0.45.0 h1:rpf0PHRXJMGY93oMruNP+tnMawKJXhhzCACyNJsT8Lo=
 github.com/gardener/machine-controller-manager v0.45.0/go.mod h1:+4j/6ab3jqbM6tM6FPtlajYgaJHM0xZ44ErOjCBlsP8=
-github.com/gardener/network-problem-detector v0.11.0 h1:0ki+uUZPXZmaBm3D8+gZcKkksrTD/0SWf6Y+Raw++O4=
-github.com/gardener/network-problem-detector v0.11.0/go.mod h1:ExwZDF3IIL3gfRqs2VnsEV6DeD+9oPl+1q9I8WSvYhg=
+github.com/gardener/network-problem-detector v0.12.0 h1:e68GUPiNT7N0+FIwf3oI0FAma0sTnOzJgVQREO6MSk8=
+github.com/gardener/network-problem-detector v0.12.0/go.mod h1:ExwZDF3IIL3gfRqs2VnsEV6DeD+9oPl+1q9I8WSvYhg=
 github.com/getkin/kin-openapi v0.76.0/go.mod h1:660oXbgy5JFMKreazJaQTw7o+X00qeSyhcnluiMv+Xg=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=

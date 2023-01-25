@@ -21,8 +21,10 @@ type AgentConfig struct {
 	K8sExporter *K8sExporterConfig `json:"k8sExporter,omitempty"`
 	// AggregationReportPeriod defines how often aggregated report is logged.
 	AggregationReportPeriod *metav1.Duration `json:"aggregationReportPeriod,omitempty"`
-	// AggregationTimeWindow defines when a aggregation edge outdates if no new observations arrive
+	// AggregationTimeWindow defines when an aggregation edge outdates if no new observations arrive
 	AggregationTimeWindow *metav1.Duration `json:"aggregationTimeWindow,omitempty"`
+	// MaxPeerNodes defines the maximum number of nodes to check (0 means check all nodes)
+	MaxPeerNodes int `json:"maxPeerNodes,omitempty"`
 	// HostNetwork is the configuration specific for daemon set in node network
 	HostNetwork *NetworkConfig `json:"hostNetwork,omitempty"`
 	// PodNetwork is the configuration specific for daemon set in node network
@@ -62,4 +64,6 @@ type K8sExporterConfig struct {
 	Enabled bool `json:"enabled"`
 	// HeartbeatPeriod defines the update frequency of the node conditions.
 	HeartbeatPeriod *metav1.Duration `json:"heartbeatPeriod,omitempty"`
+	// MinFailingPeerNodeShare if > 0, reports node conditions `ClusterNetworkProblems` or `HostNetworkProblems` for node checks only if minimum share of destination peer nodes are failing. Valid range: [0.0,1.0]
+	MinFailingPeerNodeShare float64 `json:"minFailingPeerNodeShare,omitempty"`
 }

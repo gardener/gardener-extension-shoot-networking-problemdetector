@@ -25,8 +25,11 @@ type Configuration struct {
 
 // NetworkProblemDetector contains the configuration for the network problem detector.
 type NetworkProblemDetector struct {
-	// DefaultPeriod is the default period for jobs running in the agent.
+	// DefaultPeriod optionally overrides the default period for jobs running in the agent.
 	DefaultPeriod *metav1.Duration
+
+	// MaxPeerNodes optionally overrides the MaxPeerNodes in the agent config (maximum number of is the default period for jobs running in the agent.
+	MaxPeerNodes *int
 
 	// PSPDisabled is a flag to disable pod security policy.
 	PSPDisabled *bool
@@ -44,4 +47,6 @@ type K8sExporter struct {
 	Enabled bool
 	// HeartbeatPeriod defines the update frequency of the node conditions.
 	HeartbeatPeriod *metav1.Duration
+	// MinFailingPeerNodeShare if > 0, reports node conditions `ClusterNetworkProblems` or `HostNetworkProblems` for node checks only if minimum share of destination peer nodes are failing. Valid range: [0.0,1.0]
+	MinFailingPeerNodeShare *float64
 }
