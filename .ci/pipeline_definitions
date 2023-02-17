@@ -7,6 +7,12 @@ gardener-extension-shoot-networking-problemdetector:
   base_definition:
     repo: ~
     traits:
+      component_descriptor:
+        component_labels:
+        - name: 'cloud.gardener.cnudie/responsibles'
+          value:
+          - type: 'codeowners'
+        retention_policy: 'clean-snapshots'
       version:
         preprocess: 'inject-commit-hash'
       publish:
@@ -28,15 +34,12 @@ gardener-extension-shoot-networking-problemdetector:
   jobs:
     head-update:
       traits:
-        component_descriptor:
-          retention_policy: 'clean-snapshots'
         draft_release: ~
         options:
           public_build_logs: true
     pull-request:
       traits:
         pull-request: ~
-        component_descriptor: ~
         options:
           public_build_logs: true
     release:
@@ -53,7 +56,6 @@ gardener-extension-shoot-networking-problemdetector:
             internal_scp_workspace:
               channel_name: 'C9CEBQPGE' #sap-tech-gardener
               slack_cfg_name: 'scp_workspace'
-        component_descriptor: ~
         publish:
           dockerimages:
             gardener-extension-shoot-networking-problemdetector:
