@@ -7,11 +7,11 @@ package main
 import (
 	"os"
 
-	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/cmd/gardener-extension-shoot-networking-problemdetector/app"
-
 	"github.com/gardener/gardener/pkg/logger"
 	runtimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/cmd/gardener-extension-shoot-networking-problemdetector/app"
 )
 
 func main() {

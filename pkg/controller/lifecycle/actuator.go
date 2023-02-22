@@ -11,11 +11,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/charts"
-	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
-	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
-	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/imagevector"
-
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"github.com/gardener/gardener/extensions/pkg/util"
@@ -41,6 +36,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/charts"
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/imagevector"
 )
 
 // NewActuator returns an actuator responsible for Extension resources.
