@@ -8,11 +8,6 @@ import (
 	"errors"
 	"os"
 
-	apisconfig "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
-	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config/v1alpha1"
-	controllerconfig "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/config"
-	healthcheckcontroller "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/healthcheck"
-	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/lifecycle"
 	healthcheckconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
 	"github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	extensionshealthcheckcontroller "github.com/gardener/gardener/extensions/pkg/controller/healthcheck"
@@ -20,8 +15,13 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+
+	apisconfig "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config/v1alpha1"
+	controllerconfig "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/config"
+	healthcheckcontroller "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/healthcheck"
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/lifecycle"
 )
 
 var (

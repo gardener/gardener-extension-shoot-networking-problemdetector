@@ -6,30 +6,26 @@
 
 set -e
 
-docCommitHash="12922abea4c5afa207cc9c09b18414cd2348890c"
+docCommitHash="fa2e9f84851be81e85668986675db235bb43a6b5"
 
 echo "> Check Docforge Manifest"
-
-repoPath="$(readlink -f $(dirname ${0})/..)"
-manifestPath="${repoPath}/.docforge/manifest.yaml"
-diffDirs=".docforge/;docs/"
+repoPath=${1-"$(readlink -f "$(dirname "${0}")/..")"}
+manifestPath=${2-"${repoPath}/.docforge/manifest.yaml"}
+diffDirs=${3-".docforge/;docs/"}
+repoName=${4-"gardener"}
+useToken=${5-false}
 
 tmpDir=$(mktemp -d)
-
 function cleanup {
     rm -rf "$tmpDir"
 }
-trap cleanup EXIT
+trap cleanup EXIT ERR INT TERM
 
-docforge="$tmpDir/docforge"
-docforgeVersion="v0.21.0"
-
-curl -L -o $docforge https://github.com/gardener/docforge/releases/download/$docforgeVersion/docforge-$(shell uname -s | tr '[:upper:]' '[:lower:]')-$(shell uname -m | sed 's/x86_64/amd64/')
-chmod +x $docforge
-
-curl https://raw.githubusercontent.com/gardener/documentation/${docCommitHash}/.ci/check-manifest --output ${tmpDir}/check-manifest-script.sh && chmod +x ${tmpDir}/check-manifest-script.sh
-curl https://raw.githubusercontent.com/gardener/documentation/${docCommitHash}/.ci/check-manifest-config --output ${tmpDir}/manifest-config
+curl https://raw.githubusercontent.com/gardener/documentation/${docCommitHash}/.ci/check-manifest --output "${tmpDir}/check-manifest-script.sh" && chmod +x "${tmpDir}/check-manifest-script.sh"
+# fix main branch
+sed -i 's|origin/master|origin/main|g' "${tmpDir}/check-manifest-script.sh"
+curl https://raw.githubusercontent.com/gardener/documentation/${docCommitHash}/.ci/check-manifest-config --output "${tmpDir}/manifest-config"
 scriptPath="${tmpDir}/check-manifest-script.sh"
 configPath="${tmpDir}/manifest-config"
 
-${scriptPath} --repo-path ${repoPath} --repo-name "gardener-extension-shoot-networking-problemdetector" --use-token false --manifest-path ${manifestPath} --diff-dirs ${diffDirs} --config-path ${configPath}
+${scriptPath} --repo-path "${repoPath}" --repo-name "${repoName}" --use-token "${useToken}" --manifest-path "${manifestPath}" --diff-dirs "${diffDirs}" --config-path "${configPath}"

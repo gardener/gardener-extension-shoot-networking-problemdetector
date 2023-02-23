@@ -7,12 +7,12 @@ package lifecycle
 import (
 	"time"
 
-	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
-	controllerconfig "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/config"
-
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
+	controllerconfig "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/config"
 )
 
 const (

@@ -551,6 +551,10 @@ Files: vendor/k8s.io/kube-openapi/*
 Copyright: 2015 go-swagger
 License: Apache-2.0
 
+Files: vendor/k8s.io/kubelet/*
+Copyright: 2015 The Kubernetes Authors
+License: Apache-2.0
+
 Files: vendor/k8s.io/metrics/*
 Copyright: 2017 The Kubernetes Authors
 License: Apache-2.0

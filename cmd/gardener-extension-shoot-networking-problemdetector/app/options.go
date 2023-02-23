@@ -7,9 +7,10 @@ package app
 import (
 	"os"
 
-	pfcmd "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/cmd"
 	controllercmd "github.com/gardener/gardener/extensions/pkg/controller/cmd"
 	heartbeatcmd "github.com/gardener/gardener/extensions/pkg/controller/heartbeat/cmd"
+
+	pfcmd "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/cmd"
 )
 
 // ExtensionName is the name of the extension.
