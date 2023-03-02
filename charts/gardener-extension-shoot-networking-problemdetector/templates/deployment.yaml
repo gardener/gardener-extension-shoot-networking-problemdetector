@@ -31,7 +31,8 @@ spec:
         {{- if .Values.imageVectorOverwrite }}
         checksum/configmap-extension-imagevector-overwrite: {{ include (print $.Template.BasePath "/configmap-imagevector-overwrite.yaml") . | sha256sum }}
         {{- end }}
-        {{- if and .Values.metrics.enableScraping }}
+        {{- if .Values.metrics.enableScraping }}
+        prometheus.io/name: {{ .Release.Name }}
         prometheus.io/scrape: "true"
         # default metrics endpoint in controller-runtime
         prometheus.io/port: "8080"
