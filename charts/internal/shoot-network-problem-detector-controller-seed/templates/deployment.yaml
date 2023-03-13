@@ -28,8 +28,7 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         gardener.cloud/role: controlplane
         networking.gardener.cloud/to-dns: allowed
-        networking.gardener.cloud/to-shoot-apiserver: allowed
-        networking.gardener.cloud/from-prometheus: allowed
+        networking.resources.gardener.cloud/to-kube-apiserver-tcp-443: allowed
     spec:
       containers:
       - name: {{ .Chart.Name }}

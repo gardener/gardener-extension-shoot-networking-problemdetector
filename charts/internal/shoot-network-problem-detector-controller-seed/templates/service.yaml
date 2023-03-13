@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "network-problem-detector-controller.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    networking.resources.gardener.cloud/from-policy-pod-label-selector: all-scrape-targets
+    networking.resources.gardener.cloud/from-policy-allowed-ports: '[{"port":{{ .Values.configuration.metricsPort }},"protocol":"TCP"}]'
+{{-  if .Values.ignoreResources }}
+    resources.gardener.cloud/ignore: "true"
+{{- end }}
+  labels:
+    app.kubernetes.io/name: {{ include "network-problem-detector-controller.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: {{ include "network-problem-detector-controller.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  ports:
+  - port: {{ .Values.configuration.metricsPort }}
+    protocol: TCP
+    targetPort: {{ .Values.configuration.metricsPort }}

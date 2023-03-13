@@ -40,6 +40,7 @@ metrics:
   ## enable metrics scraping
   ##
   enableScraping: true
+  port: 8080
 
 networkProblemDetector:
   defaultPeriod: 5s
