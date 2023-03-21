@@ -18,6 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/healthcheck"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/lifecycle"
 )
 
@@ -75,9 +76,11 @@ func (o *Options) run(ctx context.Context) error {
 	}
 
 	ctrlConfig := o.nwpdOptions.Completed()
+	ctrlConfig.ApplyHealthCheckConfig(&healthcheck.DefaultAddOptions.HealthCheckConfig)
 	ctrlConfig.Apply(&lifecycle.DefaultAddOptions.ServiceConfig)
 	o.controllerOptions.Completed().Apply(&lifecycle.DefaultAddOptions.ControllerOptions)
 	o.lifecycleOptions.Completed().Apply(&lifecycle.DefaultAddOptions.ControllerOptions)
+	o.healthOptions.Completed().Apply(&healthcheck.DefaultAddOptions.Controller)
 	o.heartbeatOptions.Completed().Apply(&heartbeat.DefaultAddOptions)
 
 	if err := o.controllerSwitches.Completed().AddToManager(mgr); err != nil {
