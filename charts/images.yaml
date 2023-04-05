@@ -5,10 +5,14 @@
 ---
 images:
 - name: network-problem-detector-agent
+  resourceId:
+    name: network-problem-detector
   sourceRepository: github.com/gardener/network-problem-detector
   repository: eu.gcr.io/gardener-project/gardener/network-problem-detector
   tag: "v0.13.0"
 - name: network-problem-detector-controller
   sourceRepository: github.com/gardener/network-problem-detector
+  resourceId:
+    name: network-problem-detector
   repository: eu.gcr.io/gardener-project/gardener/network-problem-detector
   tag: "v0.13.0"
