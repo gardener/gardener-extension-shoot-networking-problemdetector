@@ -71,12 +71,12 @@ check-docforge: $(DOCFORGE)
 	@./hack/check-docforge.sh
 
 .PHONY: check
-check: $(GOIMPORTS) $(GOLANGCI_LINT) $(HELM)
+check: $(GOIMPORTS) $(GOLANGCI_LINT) $(HELM) $(YQ)
 	@$(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/check.sh --golangci-lint-config=./.golangci.yaml ./cmd/... ./pkg/... ./test/...
 	@$(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/check-charts.sh ./charts
 
 .PHONY: generate
-generate: $(CONTROLLER_GEN) $(GEN_CRD_API_REFERENCE_DOCS) $(HELM) $(MOCKGEN)
+generate: $(CONTROLLER_GEN) $(GEN_CRD_API_REFERENCE_DOCS) $(HELM) $(MOCKGEN) $(YQ)
 	@GO111MODULE=off hack/update-codegen.sh --parallel
 	@$(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/generate.sh ./charts/... ./cmd/... ./pkg/... ./test/...
 	@$(MAKE) format
