@@ -35,7 +35,7 @@
       "fill": 4,
       "fillGradient": 0,
       "gridPos": {
-        "h": 15,
+        "h": 20,
         "w": 12,
         "x": 0,
         "y": 0
@@ -247,7 +247,7 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 5
       },
       "hiddenSeries": false,
       "id": 4,
@@ -348,7 +348,7 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 16
+        "y": 10
       },
       "hiddenSeries": false,
       "id": 6,
@@ -434,6 +434,104 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
+      "datasource": null,
+      "description": "Shows aggregated failures per source or destinations (node or endpoints)",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "hiddenSeries": false,
+      "id": 94,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.5.22",
+      "pointradius": 4,
+      "points": true,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "label_join(count by (dest) (rate(nwpd_aggregated_observations{status=\"failed\",jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[$__rate_interval]) > 0),\"node\",\"\",\"dest\") + ignoring(src,dest) label_join(count by (src) (rate(nwpd_aggregated_observations{status=\"failed\",jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\"}[$__rate_interval]) > 0),\"node\",\"\",\"src\")",
+          "interval": "",
+          "legendFormat": "{{node}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Failures by Source/Destination",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:315",
+          "decimals": 0,
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "$$hashKey": "object:316",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
       "description": "Latency/Duration of check operations tcp-n2n, tcp-n2p, tcp-p2p, tcp-p2n",
       "fieldConfig": {
         "defaults": {
@@ -447,7 +545,7 @@
         "h": 10,
         "w": 6,
         "x": 0,
-        "y": 24
+        "y": 20
       },
       "hiddenSeries": false,
       "id": 12,
@@ -557,7 +655,7 @@
         "h": 10,
         "w": 6,
         "x": 6,
-        "y": 24
+        "y": 20
       },
       "hiddenSeries": false,
       "id": 13,
@@ -667,7 +765,7 @@
         "h": 10,
         "w": 6,
         "x": 12,
-        "y": 24
+        "y": 20
       },
       "hiddenSeries": false,
       "id": 14,
@@ -777,7 +875,7 @@
         "h": 10,
         "w": 6,
         "x": 18,
-        "y": 24
+        "y": 20
       },
       "hiddenSeries": false,
       "id": 15,
@@ -876,7 +974,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 30
       },
       "id": 21,
       "panels": [
@@ -1033,7 +1131,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 26
+        "y": 31
       },
       "id": 57,
       "panels": [],
@@ -1065,7 +1163,7 @@
         "h": 5,
         "w": 12,
         "x": 0,
-        "y": 27
+        "y": 32
       },
       "hiddenSeries": false,
       "id": 27,
@@ -1173,7 +1271,7 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 27
+        "y": 32
       },
       "hiddenSeries": false,
       "id": 53,
