@@ -5,6 +5,7 @@
 package lifecycle
 
 import (
+	"context"
 	"time"
 
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
@@ -38,14 +39,14 @@ type AddOptions struct {
 }
 
 // AddToManager adds a Networking Policy Filter Lifecycle controller to the given Controller Manager.
-func AddToManager(mgr manager.Manager) error {
-	return extension.Add(mgr, extension.AddArgs{
-		Actuator:          NewActuator(DefaultAddOptions.ServiceConfig.Configuration),
+func AddToManager(ctx context.Context, mgr manager.Manager) error {
+	return extension.Add(ctx, mgr, extension.AddArgs{
+		Actuator:          NewActuator(mgr, DefaultAddOptions.ServiceConfig.Configuration),
 		ControllerOptions: DefaultAddOptions.ControllerOptions,
 		Name:              Name,
 		FinalizerSuffix:   FinalizerSuffix,
 		Resync:            60 * time.Minute,
-		Predicates:        extension.DefaultPredicates(DefaultAddOptions.IgnoreOperationAnnotation),
+		Predicates:        extension.DefaultPredicates(ctx, mgr, DefaultAddOptions.IgnoreOperationAnnotation),
 		Type:              constants.ExtensionType,
 	})
 }
