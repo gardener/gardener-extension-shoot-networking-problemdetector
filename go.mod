@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.0
-	github.com/gardener/gardener v1.75.0
+	github.com/gardener/gardener v1.75.1
 	github.com/gardener/network-problem-detector v0.15.0
 	github.com/go-logr/logr v1.2.4
 	github.com/onsi/ginkgo/v2 v2.9.2
@@ -139,4 +139,4 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-replace k8s.io/client-go => k8s.io/client-go v0.26.3
+replace k8s.io/client-go => k8s.io/client-go v0.26.4
