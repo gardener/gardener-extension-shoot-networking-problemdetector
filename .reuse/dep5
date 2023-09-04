@@ -31,7 +31,6 @@ License: Apache-2.0
 
 Files:
   *.md
-  .docforge/*
   docs/*
 Copyright: 2022 SAP SE or an SAP affiliate company and Gardener contributors
 License: CC-BY-4.0
