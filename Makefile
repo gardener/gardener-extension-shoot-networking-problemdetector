@@ -14,7 +14,7 @@ LEADER_ELECTION             := false
 IGNORE_OPERATION_ANNOTATION := true
 
 
-TOOLS_DIR := $(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/tools
+TOOLS_DIR := hack/tools
 include $(REPO_ROOT)/vendor/github.com/gardener/gardener/hack/tools.mk
 
 .PHONY: start
