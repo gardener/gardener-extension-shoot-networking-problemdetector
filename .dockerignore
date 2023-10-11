@@ -11,6 +11,7 @@
 !charts/
 !cmd/
 !example/
+!imagevector/
 !hack/
 !pkg/
 !test/
