@@ -39,9 +39,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/charts"
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/imagevector"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
-	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/imagevector"
 )
 
 // NewActuator returns an actuator responsible for Extension resources.

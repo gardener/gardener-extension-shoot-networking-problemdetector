@@ -5,18 +5,23 @@
 package imagevector
 
 import (
+	_ "embed"
+
 	"github.com/gardener/gardener/pkg/utils/imagevector"
 	"k8s.io/apimachinery/pkg/util/runtime"
-
-	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/charts"
 )
 
 var imageVector imagevector.ImageVector
 
+// Images YAML contains the contents of the images.yaml file.
+//
+//go:embed images.yaml
+var imagesYAML string
+
 func init() {
 	var err error
 
-	imageVector, err = imagevector.Read([]byte(charts.ImagesYAML))
+	imageVector, err = imagevector.Read([]byte(imagesYAML))
 	runtime.Must(err)
 
 	imageVector, err = imagevector.WithEnvOverride(imageVector)
