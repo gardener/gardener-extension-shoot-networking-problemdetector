@@ -181,6 +181,11 @@ func (a *actuator) Delete(ctx context.Context, log logr.Logger, ex *extensionsv1
 	return a.deleteSeedResources(ctx, log, namespace)
 }
 
+// ForceDelete the Extension resource.
+func (a *actuator) ForceDelete(ctx context.Context, log logr.Logger, ex *extensionsv1alpha1.Extension) error {
+	return a.Delete(ctx, log, ex)
+}
+
 func (a *actuator) deleteShootResources(ctx context.Context, log logr.Logger, namespace string) error {
 	log.Info("Deleting managed resource for shoot", "namespace", namespace)
 	if err := managedresources.DeleteForShoot(ctx, a.client, namespace, constants.ManagedResourceNamesAgentShoot); err != nil {
