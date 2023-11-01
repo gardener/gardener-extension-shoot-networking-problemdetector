@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.0
-	github.com/gardener/gardener v1.82.1
+	github.com/gardener/gardener v1.82.2
 	github.com/gardener/network-problem-detector v0.16.0
 	github.com/go-logr/logr v1.2.4
 	github.com/onsi/ginkgo/v2 v2.12.1
