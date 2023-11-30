@@ -6,7 +6,7 @@ To support this the Gardener must be installed with the `shoot-networking-proble
 
 ## Configuration
 
-To generally enable the networking problem detector for shoot objects the `shoot-networking-problemdetector` extension must be registered by providing an appropriate [extension registration](https://github.com/gardener/gardener-extension-shoot-networking-problemdetector/blob/master/example/controller-registration.yaml) in the garden cluster.
+To generally enable the networking problem detector for shoot objects the `shoot-networking-problemdetector` extension must be registered by providing an appropriate [extension registration](../../example/controller-registration.yaml) in the garden cluster.
 
 Here it is possible to decide whether the extension should be always available for all shoots or whether the extension must be separately enabled per shoot.
 
@@ -24,7 +24,7 @@ spec:
 ```
 
 ### ControllerRegistration
-An example of a `ControllerRegistration` for the `shoot-networking-problemdetector` can be found here: https://github.com/gardener/gardener-extension-shoot-networking-problemdetector/blob/master/example/controller-registration.yaml
+An example of a `ControllerRegistration` for the `shoot-networking-problemdetector` can be found at [controller-registration.yaml](https://github.com/gardener/gardener-extension-shoot-networking-problemdetector/blob/master/example/controller-registration.yaml).
 
 The `ControllerRegistration` contains a Helm chart which eventually deploys the `shoot-networking-problemdetector` to seed clusters. It offers some configuration options, mainly to set up a static filter list or provide the configuration for downloading the filter list from a service endpoint.
 
