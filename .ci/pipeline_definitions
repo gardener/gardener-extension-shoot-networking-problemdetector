@@ -3,9 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 gardener-extension-shoot-networking-problemdetector:
-  template: 'default'
   base_definition:
-    repo: ~
     traits:
       component_descriptor:
         component_labels:
@@ -18,7 +16,6 @@ gardener-extension-shoot-networking-problemdetector:
       publish:
         dockerimages:
           gardener-extension-shoot-networking-problemdetector:
-            registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/extensions/shoot-networking-problemdetector'
             dockerfile: 'Dockerfile'
             target: gardener-extension-shoot-networking-problemdetector
