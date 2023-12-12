@@ -6,6 +6,7 @@ gardener-extension-shoot-networking-problemdetector:
   base_definition:
     traits:
       component_descriptor:
+        ocm_repository: europe-docker.pkg.dev/gardener-project/snapshots
         component_labels:
         - name: 'cloud.gardener.cnudie/responsibles'
           value:
@@ -16,7 +17,7 @@ gardener-extension-shoot-networking-problemdetector:
       publish:
         dockerimages:
           gardener-extension-shoot-networking-problemdetector:
-            image: 'eu.gcr.io/gardener-project/gardener/extensions/shoot-networking-problemdetector'
+            image: europe-docker.pkg.dev/gardener-project/snapshots/gardener/extensions/shoot-networking-problemdetector
             dockerfile: 'Dockerfile'
             target: gardener-extension-shoot-networking-problemdetector
             resource_labels:
@@ -32,17 +33,25 @@ gardener-extension-shoot-networking-problemdetector:
     head-update:
       traits:
         draft_release: ~
+        component_descriptor:
+          ocm_repository_mappings:
+            - repository: europe-docker.pkg.dev/gardener-project/releases
         options:
           public_build_logs: true
     pull-request:
       traits:
         pull-request: ~
+        component_descriptor:
+          ocm_repository_mappings:
+            - repository: europe-docker.pkg.dev/gardener-project/releases
         options:
           public_build_logs: true
     release:
       traits:
         version:
           preprocess: 'finalize'
+        component_descriptor:
+          ocm_repository: europe-docker.pkg.dev/gardener-project/releases
         release:
           nextversion: 'bump_minor'
           next_version_callback: '.ci/prepare_release'
@@ -56,4 +65,5 @@ gardener-extension-shoot-networking-problemdetector:
         publish:
           dockerimages:
             gardener-extension-shoot-networking-problemdetector:
+              image: europe-docker.pkg.dev/gardener-project/releases/gardener/extensions/shoot-networking-problemdetector
               tag_as_latest: true
