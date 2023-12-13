@@ -8,11 +8,11 @@ images:
   resourceId:
     name: network-problem-detector
   sourceRepository: github.com/gardener/network-problem-detector
-  repository: eu.gcr.io/gardener-project/gardener/network-problem-detector
+  repository: europe-docker.pkg.dev/gardener-project/releases/gardener/network-problem-detector
   tag: "v0.16.0"
 - name: network-problem-detector-controller
   sourceRepository: github.com/gardener/network-problem-detector
   resourceId:
     name: network-problem-detector
-  repository: eu.gcr.io/gardener-project/gardener/network-problem-detector
+  repository: europe-docker.pkg.dev/gardener-project/releases/gardener/network-problem-detector
   tag: "v0.16.0"

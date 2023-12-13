@@ -4,7 +4,7 @@
 
 ---
 image:
-  repository: eu.gcr.io/gardener-project/gardener/extensions/shoot-networking-problemdetector
+  repository: europe-docker.pkg.dev/gardener-project/public/gardener/extensions/shoot-networking-problemdetector
   tag: latest
   pullPolicy: IfNotPresent
 
