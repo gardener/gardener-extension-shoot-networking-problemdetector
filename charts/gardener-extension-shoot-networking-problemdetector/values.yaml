@@ -45,7 +45,6 @@ metrics:
 networkProblemDetector:
   defaultPeriod: 5s
 #  maxPeerNodes: 7
-#  pspDisabled: false # pod security policy
 #  pingEnabled: false
   k8sExporter:
     enabled: false
