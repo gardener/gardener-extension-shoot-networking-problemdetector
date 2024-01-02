@@ -4,4 +4,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-./vendor/github.com/gardener/gardener/hack/hook-me.sh gardener-extension-shoot-networking-problemdetector $@
+GARDENER_HACK_DIR=$(go list -m -f '{{.Dir}}' github.com/gardener/gardener)/hack
+
+bash $(GARDENER_HACK_DIR)/hook-me.sh gardener-extension-shoot-networking-problemdetector $@
