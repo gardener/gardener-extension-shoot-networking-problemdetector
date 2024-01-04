@@ -141,8 +141,8 @@ github.com/gardener/hvpa-controller/api v0.5.0 h1:f4F3O7YUrenwh4S3TgPREPiB287Jjj
 github.com/gardener/hvpa-controller/api v0.5.0/go.mod h1:QQl3ELkCaki+8RhXl0FZMfvnm0WCGwGJlGmrxJj6lvM=
 github.com/gardener/machine-controller-manager v0.50.0 h1:3dcQjzueFU1TGgprV00adjb3OCR99myTBx8DQGxywks=
 github.com/gardener/machine-controller-manager v0.50.0/go.mod h1:RySZ40AgbNV/wMq60G/w49kb+okbj5Xs1A6usz5Pm/I=
-github.com/gardener/network-problem-detector v0.16.0 h1:5soh2e1OL1O7TOfhaOuYNA/Wjuk+ONQ0YwWrB++5PvU=
-github.com/gardener/network-problem-detector v0.16.0/go.mod h1:wUCEobxVwyanvddLXNkoAYc2MZ2yBL8WLp6ML5vPvAA=
+github.com/gardener/network-problem-detector v0.18.0 h1:wTzPIQcA8sCO/6f5z3LD88hLzoyWOfmQp8V4gpLeLtU=
+github.com/gardener/network-problem-detector v0.18.0/go.mod h1:JMx0xWS3fcQtz/qVv/wRWpUAUIboeVTBaN5yeH9YNzo=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
