@@ -26,7 +26,7 @@ var _ = Describe("activator methods", func() {
 	)
 
 	It("DeployNetworkProblemDetectorAgent", func() {
-		objs, err := deploy.DeployNetworkProblemDetectorAgent(deployConfig)
+		objs, err := deploy.NetworkProblemDetectorAgent(deployConfig)
 		Expect(err).To(BeNil())
 		Expect(len(objs)).NotTo(BeZero())
 		var ds *appsv1.DaemonSet

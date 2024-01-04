@@ -278,7 +278,7 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 			deployConfig.K8sExporterMinFailingPeerNodeShare = *k8sExporter.MinFailingPeerNodeShare
 		}
 	}
-	objs, err := deploy.DeployNetworkProblemDetectorAgent(deployConfig)
+	objs, err := deploy.NetworkProblemDetectorAgent(deployConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -312,8 +312,8 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 
 func buildAgentNetworkPolicy() client.Object {
 	tcp := corev1.ProtocolTCP
-	podHttpPort := intstr.FromInt(common.PodNetPodHttpPort)
-	hostHttpPort := intstr.FromInt(common.HostNetPodHttpPort)
+	podHttpPort := intstr.FromInt32(common.PodNetPodHTTPPort)
+	hostHttpPort := intstr.FromInt32(common.HostNetPodHTTPPort)
 	return &networkingv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "gardener.cloud--allow-to-from-nwpd-agents",
