@@ -10,6 +10,7 @@ import (
 
 	healthcheckconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
 	"github.com/gardener/gardener/extensions/pkg/controller/healthcheck"
+	"github.com/gardener/gardener/extensions/pkg/controller/healthcheck/general"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -40,7 +41,16 @@ func RegisterHealthChecks(ctx context.Context, mgr manager.Manager, opts healthc
 		mgr,
 		opts,
 		nil,
-		[]healthcheck.ConditionTypeToHealthCheck{},
+		[]healthcheck.ConditionTypeToHealthCheck{
+			{
+				ConditionType: string(gardencorev1beta1.ShootObservabilityComponentsHealthy),
+				HealthCheck:   general.CheckManagedResource(constants.ManagedResourceNamesControllerShoot),
+			},
+			{
+				ConditionType: string(gardencorev1beta1.ShootObservabilityComponentsHealthy),
+				HealthCheck:   general.CheckManagedResource(constants.ManagedResourceNamesAgentShoot),
+			},
+		},
 		sets.New[gardencorev1beta1.ConditionType](),
 	)
 }
