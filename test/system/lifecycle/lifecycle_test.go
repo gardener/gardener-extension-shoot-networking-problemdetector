@@ -21,7 +21,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
@@ -76,7 +76,7 @@ func ensureShootNetworkingFilterIsEnabled(shoot *gardencorev1beta1.Shoot) error 
 	for i, e := range shoot.Spec.Extensions {
 		if e.Type == constants.ExtensionType {
 			if e.Disabled != nil && *e.Disabled == true {
-				shoot.Spec.Extensions[i].Disabled = pointer.Bool(false)
+				shoot.Spec.Extensions[i].Disabled = ptr.To(false)
 			}
 			return nil
 		}
@@ -84,7 +84,7 @@ func ensureShootNetworkingFilterIsEnabled(shoot *gardencorev1beta1.Shoot) error 
 
 	shoot.Spec.Extensions = append(shoot.Spec.Extensions, gardencorev1beta1.Extension{
 		Type:     constants.ExtensionType,
-		Disabled: pointer.Bool(false),
+		Disabled: ptr.To(false),
 	})
 	return nil
 }
@@ -92,13 +92,13 @@ func ensureShootNetworkingFilterIsEnabled(shoot *gardencorev1beta1.Shoot) error 
 func ensureShootNetworkingFilterIsDisabled(shoot *gardencorev1beta1.Shoot) error {
 	for i, e := range shoot.Spec.Extensions {
 		if e.Type == constants.ExtensionType {
-			shoot.Spec.Extensions[i].Disabled = pointer.Bool(true)
+			shoot.Spec.Extensions[i].Disabled = ptr.To(true)
 			return nil
 		}
 	}
 	shoot.Spec.Extensions = append(shoot.Spec.Extensions, gardencorev1beta1.Extension{
 		Type:     constants.ExtensionType,
-		Disabled: pointer.Bool(true),
+		Disabled: ptr.To(true),
 	})
 	return nil
 }
