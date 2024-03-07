@@ -18,10 +18,9 @@ import (
 var _ = Describe("activator methods", func() {
 	var (
 		deployConfig = &deploy.AgentDeployConfig{
-			Image:                    "image:tag",
-			DefaultPeriod:            16 * time.Second,
-			PodSecurityPolicyEnabled: true,
-			PingEnabled:              false,
+			Image:         "image:tag",
+			DefaultPeriod: 16 * time.Second,
+			PingEnabled:   false,
 		}
 	)
 
