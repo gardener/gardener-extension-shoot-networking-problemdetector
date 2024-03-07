@@ -35,10 +35,6 @@ type NetworkProblemDetector struct {
 	// +optional
 	MaxPeerNodes *int `json:"maxPeerNodes,omitempty"`
 
-	// PSPDisabled is a flag to disable pod security policy.
-	// +optional
-	PSPDisabled *bool `json:"pspDisabled,omitempty"`
-
 	// PingEnabled is a flag if ICMP ping checks should be performed.
 	// +optional
 	PingEnabled *bool `json:"pingEnabled,omitempty"`

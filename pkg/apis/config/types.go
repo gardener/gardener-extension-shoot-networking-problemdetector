@@ -30,9 +30,6 @@ type NetworkProblemDetector struct {
 	// MaxPeerNodes optionally overrides the MaxPeerNodes in the agent config (maximum number of is the default period for jobs running in the agent.
 	MaxPeerNodes *int
 
-	// PSPDisabled is a flag to disable pod security policy.
-	PSPDisabled *bool
-
 	// PingEnabled is a flag if ICMP ping checks should be performed.
 	PingEnabled *bool
 

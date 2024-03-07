@@ -89,11 +89,6 @@ func (in *NetworkProblemDetector) DeepCopyInto(out *NetworkProblemDetector) {
 		*out = new(int)
 		**out = **in
 	}
-	if in.PSPDisabled != nil {
-		in, out := &in.PSPDisabled, &out.PSPDisabled
-		*out = new(bool)
-		**out = **in
-	}
 	if in.PingEnabled != nil {
 		in, out := &in.PingEnabled, &out.PingEnabled
 		*out = new(bool)

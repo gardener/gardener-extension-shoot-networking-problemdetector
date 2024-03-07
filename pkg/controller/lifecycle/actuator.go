@@ -15,7 +15,6 @@ import (
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"github.com/gardener/gardener/extensions/pkg/util"
 	corev1betaconstants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
-	gardencorev1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	resourcesv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 	"github.com/gardener/gardener/pkg/chartrenderer"
@@ -24,7 +23,7 @@ import (
 	"github.com/gardener/gardener/pkg/utils/chart"
 	gutil "github.com/gardener/gardener/pkg/utils/gardener"
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
-	managedresources "github.com/gardener/gardener/pkg/utils/managedresources"
+	"github.com/gardener/gardener/pkg/utils/managedresources"
 	"github.com/gardener/network-problem-detector/pkg/common"
 	"github.com/gardener/network-problem-detector/pkg/deploy"
 	"github.com/go-logr/logr"
@@ -71,7 +70,7 @@ func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, ex *extension
 	}
 
 	if !controller.IsHibernated(cluster) {
-		if err := a.createShootResources(ctx, cluster, namespace, gardencorev1beta1helper.IsPSPDisabled(cluster.Shoot)); err != nil {
+		if err := a.createShootResources(ctx, cluster, namespace); err != nil {
 			return err
 		}
 	}
@@ -110,10 +109,9 @@ func (a *actuator) createSeedResources(ctx context.Context, log logr.Logger, clu
 	return a.createManagedResource(ctx, namespace, constants.ManagedResourceNamesControllerSeed, "seed", renderer, constants.NetworkProblemDetectorControllerChartNameSeed, namespace, values, nil)
 }
 
-func (a *actuator) createShootResources(ctx context.Context, cluster *controller.Cluster, namespace string, pspDisabled bool) error {
+func (a *actuator) createShootResources(ctx context.Context, cluster *controller.Cluster, namespace string) error {
 	defaultPeriod := 5 * time.Second
 	maxPeerNodes := 25
-	pspDisabledByConfig := false
 	pingEnabled := false
 	var k8sExporter *config.K8sExporter
 	if a.serviceConfig.NetworkProblemDetector != nil {
@@ -123,9 +121,6 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 		if a.serviceConfig.NetworkProblemDetector.MaxPeerNodes != nil {
 			maxPeerNodes = *a.serviceConfig.NetworkProblemDetector.MaxPeerNodes
 		}
-		if a.serviceConfig.NetworkProblemDetector.PSPDisabled != nil {
-			pspDisabledByConfig = *a.serviceConfig.NetworkProblemDetector.PSPDisabled
-		}
 		if a.serviceConfig.NetworkProblemDetector.PingEnabled != nil {
 			pingEnabled = !*a.serviceConfig.NetworkProblemDetector.PingEnabled
 		}
@@ -134,7 +129,7 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 		}
 	}
 
-	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, !pspDisabled && !pspDisabledByConfig, k8sExporter, maxPeerNodes)
+	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, k8sExporter, maxPeerNodes)
 	if err != nil {
 		return err
 	}
@@ -241,7 +236,7 @@ func (a *actuator) Migrate(ctx context.Context, log logr.Logger, ex *extensionsv
 	return a.Delete(ctx, log, ex)
 }
 
-func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled, pspEnabled bool, k8sExporter *config.K8sExporter, maxPeerNodes int) (map[string][]byte, error) {
+func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled bool, k8sExporter *config.K8sExporter, maxPeerNodes int) (map[string][]byte, error) {
 	shootRegistry := managedresources.NewRegistry(kubernetes.ShootScheme, kubernetes.ShootCodec, kubernetes.ShootSerializer)
 
 	image, err := imagevector.ImageVector().FindImage(constants.AgentImageName)
@@ -254,7 +249,6 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 		DefaultPeriod:                defaultPeriod,
 		MaxPeerNodes:                 maxPeerNodes,
 		DefaultSeccompProfileEnabled: true,
-		PodSecurityPolicyEnabled:     pspEnabled,
 		PingEnabled:                  pingEnabled,
 		PriorityClassName:            corev1betaconstants.PriorityClassNameShootSystem900,
 		AdditionalLabels: map[string]string{
@@ -270,7 +264,7 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 		deployConfig.K8sExporterHeartbeat = 3 * time.Minute
 		if k8sExporter.HeartbeatPeriod != nil {
 			if k8sExporter.HeartbeatPeriod.Duration < 1*time.Minute {
-				return nil, fmt.Errorf("Invalid k8sExporter.heartbeatPeriod. Must be >= 1m")
+				return nil, fmt.Errorf("invalid k8sExporter.heartbeatPeriod. Must be >= 1m")
 			}
 			deployConfig.K8sExporterHeartbeat = k8sExporter.HeartbeatPeriod.Duration
 		}

@@ -173,18 +173,6 @@ int
 </tr>
 <tr>
 <td>
-<code>pspDisabled</code></br>
-<em>
-bool
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>PSPDisabled is a flag to disable pod security policy.</p>
-</td>
-</tr>
-<tr>
-<td>
 <code>pingEnabled</code></br>
 <em>
 bool
