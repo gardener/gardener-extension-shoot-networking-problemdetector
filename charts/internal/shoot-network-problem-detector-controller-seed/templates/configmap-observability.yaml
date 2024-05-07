@@ -1,3 +1,4 @@
+{{- if not .Values.gep19Monitoring }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -59,3 +60,4 @@ data:
   dashboard_users: |
     network-problem-detector-dashboard.json: |-
 {{- .Files.Get "nwpd-dashboard.json" | nindent 6 }}
+{{- end }}

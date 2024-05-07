@@ -1,0 +1,12 @@
+{{- if .Values.gep19Monitoring }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: network-problem-detector-dashboards
+  namespace: {{ .Release.Namespace }}
+  labels:
+    dashboard.monitoring.gardener.cloud/shoot: "true"
+data:
+  network-problem-detector-dashboard.json: |-
+{{- .Files.Get "nwpd-dashboard.json" | nindent 4 }}
+{{- end }}
