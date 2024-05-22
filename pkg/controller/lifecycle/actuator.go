@@ -387,7 +387,7 @@ func buildDefaultAgentConfigMap(deployConfig *deploy.AgentDeployConfig) (*corev1
 
 func buildDefaultClusterConfigMap() (*corev1.ConfigMap, error) {
 	// clusterConfig is updated by nwpd controller later, but it is created here
-	clusterConfig, err := deploy.BuildClusterConfig(nil, nil, nil, nil)
+	clusterConfig, err := deploy.BuildClusterConfig(nil, nil, nil, nil, nil)
 	if err != nil {
 		return nil, err
 	}
