@@ -35,16 +35,12 @@ spec:
     - __name__
     action: keep
     regex: nwpd_.+
-  - sourceLabels:
-    - namespace
-    action: keep
-    regex: kube-system
   relabelings:
   - action: replace
     replacement: network-problem-detector-agents
     targetLabel: job
-  - sourceLabels: [__meta_kubernetes_service_name,__meta_kubernetes_endpoint_port_name,__meta_kubernetes_namespace]
-    regex: network-problem-detector-(pod|host);metrics;kube-system
+  - sourceLabels: [__meta_kubernetes_service_name,__meta_kubernetes_endpoint_port_name]
+    regex: network-problem-detector-(pod|host);metrics
     action: keep
   - action: labelmap
     regex: __meta_kubernetes_pod_label_(.+)
