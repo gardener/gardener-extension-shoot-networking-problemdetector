@@ -178,7 +178,7 @@ func (a *actuator) createManagedResource(ctx context.Context, namespace, name, c
 func (a *actuator) Delete(ctx context.Context, log logr.Logger, ex *extensionsv1alpha1.Extension) error {
 	namespace := ex.GetNamespace()
 
-	err := a.deleteShootResources(ctx, log, namespace)
+	err := a.deleteShootResources(ctx, log, namespace, false)
 	if err != nil {
 		return err
 	}
@@ -188,16 +188,29 @@ func (a *actuator) Delete(ctx context.Context, log logr.Logger, ex *extensionsv1
 
 // ForceDelete the Extension resource.
 func (a *actuator) ForceDelete(ctx context.Context, log logr.Logger, ex *extensionsv1alpha1.Extension) error {
-	return a.Delete(ctx, log, ex)
+	namespace := ex.GetNamespace()
+
+	err := a.deleteShootResources(ctx, log, namespace, true)
+	if err != nil {
+		return err
+	}
+
+	return a.deleteSeedResources(ctx, log, namespace)
 }
 
-func (a *actuator) deleteShootResources(ctx context.Context, log logr.Logger, namespace string) error {
+func (a *actuator) deleteShootResources(ctx context.Context, log logr.Logger, namespace string, forceDelete bool) error {
 	log.Info("Deleting managed resource for shoot", "namespace", namespace)
 	if err := managedresources.DeleteForShoot(ctx, a.client, namespace, constants.ManagedResourceNamesAgentShoot); err != nil {
 		return err
 	}
 	if err := managedresources.DeleteForShoot(ctx, a.client, namespace, constants.ManagedResourceNamesControllerShoot); err != nil {
 		return err
+	}
+
+	// We don't need to wait for the shoot managed resource deletion because managed resources are finalized by gardenlet
+	// in later step in the Shoot force deletion flow.
+	if forceDelete {
+		return nil
 	}
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
@@ -208,6 +221,7 @@ func (a *actuator) deleteShootResources(ctx context.Context, log logr.Logger, na
 	if err := managedresources.WaitUntilDeleted(timeoutCtx, a.client, namespace, constants.ManagedResourceNamesControllerShoot); err != nil {
 		return err
 	}
+
 	return nil
 }
 
