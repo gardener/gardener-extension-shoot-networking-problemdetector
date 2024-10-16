@@ -23,6 +23,9 @@ gardener-extension-shoot-networking-problemdetector:
           policy: skip
           comment: |
             we use gosec for sast scanning. See attached log.
+    steps:
+      verify:
+        image: 'golang:1.23.2'
     traits:
       component_descriptor:
         ocm_repository: europe-docker.pkg.dev/gardener-project/snapshots
