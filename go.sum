@@ -103,8 +103,8 @@ github.com/gardener/hvpa-controller/api v0.17.0 h1:1mNeP+xsnjPH6GhewugU5srslXiTC
 github.com/gardener/hvpa-controller/api v0.17.0/go.mod h1:eKrL7j6/YX8PaoP80xxi3+UFmQgHVf/QCPsGwNnmDeE=
 github.com/gardener/machine-controller-manager v0.54.0 h1:V7EOODiaBO9VesskdCgxMvo5vgMAmtmUTdb9Y9Nwp50=
 github.com/gardener/machine-controller-manager v0.54.0/go.mod h1:RPpnU8gmTrhDAd79+iKqKlbANiXCRkXoJW+z+5zSTME=
-github.com/gardener/network-problem-detector v0.21.0 h1:eq8X2aw8Cdn60R4aOti2iKUdvi05eMKtAU5W/uuvI6s=
-github.com/gardener/network-problem-detector v0.21.0/go.mod h1:0v38TbVaqrBgGu7FBSDjHTcAdzb9YExSo+9WYevtEig=
+github.com/gardener/network-problem-detector v0.25.0 h1:ejPBdsuP45HEl+/+k88ZScMKnjRqCMIijlP2Hr51f7o=
+github.com/gardener/network-problem-detector v0.25.0/go.mod h1:3QA6omC+KJ2TtgAq2tYtQNrVbh3VDx36KTsfLb51O14=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-logr/logr v0.1.0/go.mod h1:ixOQHD9gLJUVQQ2ZOR7zLEifBX6tGkNJF4QyIY7sIas=
