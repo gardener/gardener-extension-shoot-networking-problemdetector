@@ -13,7 +13,6 @@ import (
 	unsafe "unsafe"
 
 	config "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
-	apisconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
 	configv1alpha1 "github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
@@ -62,7 +61,7 @@ func RegisterConversions(s *runtime.Scheme) error {
 
 func autoConvert_v1alpha1_Configuration_To_config_Configuration(in *Configuration, out *config.Configuration, s conversion.Scope) error {
 	out.NetworkProblemDetector = (*config.NetworkProblemDetector)(unsafe.Pointer(in.NetworkProblemDetector))
-	out.HealthCheckConfig = (*apisconfig.HealthCheckConfig)(unsafe.Pointer(in.HealthCheckConfig))
+	out.HealthCheckConfig = (*configv1alpha1.HealthCheckConfig)(unsafe.Pointer(in.HealthCheckConfig))
 	return nil
 }
 
