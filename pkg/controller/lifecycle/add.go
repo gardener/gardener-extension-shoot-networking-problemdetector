@@ -12,8 +12,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
-	controllerconfig "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/config"
 )
 
 const (
@@ -33,7 +33,7 @@ type AddOptions struct {
 	// ControllerOptions contains options for the controller.
 	ControllerOptions controller.Options
 	// ServiceConfig contains configuration for the network problem detector.
-	ServiceConfig controllerconfig.Config
+	ServiceConfig config.Configuration
 	// IgnoreOperationAnnotation specifies whether to ignore the operation annotation or not.
 	IgnoreOperationAnnotation bool
 }
@@ -41,7 +41,7 @@ type AddOptions struct {
 // AddToManager adds a Networking Policy Filter Lifecycle controller to the given Controller Manager.
 func AddToManager(ctx context.Context, mgr manager.Manager) error {
 	return extension.Add(mgr, extension.AddArgs{
-		Actuator:          NewActuator(mgr, DefaultAddOptions.ServiceConfig.Configuration),
+		Actuator:          NewActuator(mgr, DefaultAddOptions.ServiceConfig),
 		ControllerOptions: DefaultAddOptions.ControllerOptions,
 		Name:              Name,
 		FinalizerSuffix:   FinalizerSuffix,
