@@ -17,9 +17,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 
-	apisconfig "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config/v1alpha1"
-	controllerconfig "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/config"
 	healthcheckcontroller "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/healthcheck"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/lifecycle"
 )
@@ -31,7 +30,7 @@ var (
 
 func init() {
 	scheme = runtime.NewScheme()
-	utilruntime.Must(apisconfig.AddToScheme(scheme))
+	utilruntime.Must(config.AddToScheme(scheme))
 	utilruntime.Must(v1alpha1.AddToScheme(scheme))
 
 	decoder = serializer.NewCodecFactory(scheme).UniversalDecoder()
@@ -58,7 +57,7 @@ func (o *NetworkProblemDetectorOptions) Complete() error {
 		return err
 	}
 
-	config := apisconfig.Configuration{}
+	config := config.Configuration{}
 	_, _, err = decoder.Decode(data, nil, &config)
 	if err != nil {
 		return err
@@ -78,12 +77,12 @@ func (o *NetworkProblemDetectorOptions) Completed() *NetworkProblemDetectorConfi
 
 // NetworkProblemDetectorConfig contains configuration information about the network problem detector.
 type NetworkProblemDetectorConfig struct {
-	config apisconfig.Configuration
+	config config.Configuration
 }
 
 // Apply applies the NetworkProblemDetectorOptions to the passed ControllerOptions instance.
-func (c *NetworkProblemDetectorConfig) Apply(config *controllerconfig.Config) {
-	config.Configuration = c.config
+func (c *NetworkProblemDetectorConfig) Apply(config *config.Configuration) {
+	*config = c.config
 }
 
 // ApplyHealthCheckConfig applies the HealthCheckConfig to the config.
