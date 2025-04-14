@@ -29,5 +29,3 @@ configuration:
   metricsPort: 10258
   healthProbePort: 10259
 
-# TODO(rfranzke): Remove this field after August 2024.
-gep19Monitoring: false
