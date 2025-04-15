@@ -24,7 +24,13 @@ rules:
   resources:
   - managedresources
   verbs:
-  - "*"
+  - create
+  - get
+  - list
+  - watch
+  - update
+  - patch
+  - delete
 - apiGroups:
   - ""
   resources:
@@ -52,7 +58,11 @@ rules:
   - secrets
   - events
   verbs:
-  - "*"
+  - create
+  - delete
+  - get
+  - patch
+  - update
 - apiGroups:
   - coordination.k8s.io
   resources:
