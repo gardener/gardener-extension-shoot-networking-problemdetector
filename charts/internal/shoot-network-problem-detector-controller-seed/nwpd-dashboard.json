@@ -577,7 +577,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "quantile by (jobid) (0.5,nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-n2n|tcp-n2p|tcp-p2n|tcp-p2p\"})",
+          "expr": "quantile by (jobid) (0.5,nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-n2n|tcp-n2p|tcp-p2n|tcp-p2p|tcp-n2n-ipv6|tcp-n2p-ipv6|tcp-p2n-ipv6|tcp-p2p-ipv6\"})",
           "legendFormat": "q50 jobid={{jobid}}",
           "interval": "",
           "exemplar": true,
@@ -585,7 +585,7 @@
           "refId": "A"
         },
         {
-          "expr": "quantile by (jobid) (0.99, nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-n2n|tcp-n2p|tcp-p2n|tcp-p2p\"})",
+          "expr": "quantile by (jobid) (0.99, nwpd_aggregated_observations_latency_secs{jobid=~\"$jobid\",src=~\"$source\",dest=~\"$dest\",jobid=~\"tcp-n2n|tcp-n2p|tcp-p2n|tcp-p2p|tcp-n2n-ipv6|tcp-n2p-ipv6|tcp-p2n-ipv6|tcp-p2p-ipv6\"})",
           "legendFormat": "q99 jobid={{jobid}}",
           "interval": "",
           "exemplar": true,

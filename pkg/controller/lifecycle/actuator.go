@@ -15,6 +15,7 @@ import (
 	"github.com/gardener/gardener/extensions/pkg/controller/extension"
 	"github.com/gardener/gardener/extensions/pkg/util"
 	corev1betaconstants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
+	gardencorev1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	resourcesv1alpha1 "github.com/gardener/gardener/pkg/apis/resources/v1alpha1"
 	"github.com/gardener/gardener/pkg/chartrenderer"
@@ -130,7 +131,16 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 		}
 	}
 
-	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, k8sExporter, maxPeerNodes)
+	ipfamilies := cluster.Shoot.Spec.Networking.IPFamilies
+
+	condition := gardencorev1beta1helper.GetCondition(cluster.Shoot.Status.Constraints, "DualStackNodesMigrationReady")
+
+	ipFamiliesStr := string(ipfamilies[0])
+	if len(ipfamilies) == 2 && cluster.Shoot.Status.Networking != nil && len(cluster.Shoot.Status.Networking.Nodes) == 2 && condition == nil {
+		ipFamiliesStr = string(ipfamilies[0]) + "," + string(ipfamilies[1])
+	}
+
+	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, k8sExporter, maxPeerNodes, ipFamiliesStr)
 	if err != nil {
 		return err
 	}
@@ -251,7 +261,7 @@ func (a *actuator) Migrate(ctx context.Context, log logr.Logger, ex *extensionsv
 	return a.Delete(ctx, log, ex)
 }
 
-func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled bool, k8sExporter *config.K8sExporter, maxPeerNodes int) (map[string][]byte, error) {
+func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled bool, k8sExporter *config.K8sExporter, maxPeerNodes int, ipFamilies string) (map[string][]byte, error) {
 	shootRegistry := managedresources.NewRegistry(kubernetes.ShootScheme, kubernetes.ShootCodec, kubernetes.ShootSerializer)
 
 	image, err := imagevector.ImageVector().FindImage(constants.AgentImageName)
@@ -264,6 +274,7 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 		DefaultPeriod:                defaultPeriod,
 		MaxPeerNodes:                 maxPeerNodes,
 		DefaultSeccompProfileEnabled: true,
+		IPFamilies:                   ipFamilies,
 		PingEnabled:                  pingEnabled,
 		PriorityClassName:            corev1betaconstants.PriorityClassNameShootSystem900,
 		AdditionalLabels: map[string]string{
