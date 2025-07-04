@@ -10,7 +10,7 @@ To generally enable the networking problem detector for shoot objects the `shoot
 
 Here it is possible to decide whether the extension should be always available for all shoots or whether the extension must be separately enabled per shoot.
 
-If the extension should be used for all shoots the `globallyEnabled` flag should be set to `true`.
+If the extension should automatically be used for all shoots the `autoEnable` field should be set to `[shoot]`.
 
 ```yaml
 apiVersion: core.gardener.cloud/v1beta1
@@ -20,7 +20,7 @@ spec:
   resources:
     - kind: Extension
       type: shoot-networking-problemdetector
-      globallyEnabled: true
+      autoEnable: [shoot]
 ```
 
 ### ControllerRegistration
