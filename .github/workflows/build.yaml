@@ -84,6 +84,8 @@ jobs:
       ocm-mappings: ${{ toJSON(matrix.args.ocm-mappings) }}
 
   verify:
+    permissions:
+      contents: read
     uses: gardener/cc-utils/.github/workflows/sastlint-ocm.yaml@master
     with:
       linter: gosec
