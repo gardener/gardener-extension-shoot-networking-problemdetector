@@ -1,0 +1,45 @@
+ocm:
+  component_name: github.com/gardener/network-problem-detector
+  component_version: v0.27.0
+release_notes:
+- audience: user
+  author:
+    hostname: github.com
+    type: githubUser
+    username: ScheererJ
+  category: feature
+  contents: HTTPS checks to the API server now use the token of the pod thereby not
+    causing any audit events (error code 401).
+  mimetype: text/markdown
+  reference: '[#109](https://github.com/gardener/network-problem-detector/pull/109)'
+  type: standard
+- audience: developer
+  author:
+    hostname: github.com
+    type: githubUser
+    username: ccwienk
+  category: other
+  contents: migrate CICD-Pipeline to GitHub-Actions
+  mimetype: text/markdown
+  reference: '[#102](https://github.com/gardener/network-problem-detector/pull/102)'
+  type: standard
+- audience: user
+  author:
+    hostname: github.com
+    type: githubUser
+    username: Franziska-Schallhorn
+  category: feature
+  contents: export testresults as inlined ocm-resource
+  mimetype: text/markdown
+  reference: '[#105](https://github.com/gardener/network-problem-detector/pull/105)'
+  type: standard
+- audience: user
+  author:
+    hostname: github.com
+    type: githubUser
+    username: Franziska-Schallhorn
+  category: feature
+  contents: export testresults as inlined ocm-resource - CORRECTION
+  mimetype: text/markdown
+  reference: '[#106](https://github.com/gardener/network-problem-detector/pull/106)'
+  type: standard
