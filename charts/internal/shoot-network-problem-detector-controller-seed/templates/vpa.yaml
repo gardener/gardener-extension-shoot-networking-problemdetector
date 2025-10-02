@@ -10,7 +10,7 @@ spec:
     kind: Deployment
     name: {{ include "network-problem-detector-controller.fullname" . }}
   updatePolicy:
-    updateMode: "Auto"
+    updateMode: "Recreate"
   resourcePolicy:
     containerPolicies:
       - containerName: '*'
