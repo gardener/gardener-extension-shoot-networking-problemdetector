@@ -1,0 +1,15 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+aliases:
+  gardener-extension-shoot-networking-problemdetector-reviewers:
+  - axel7born
+  - DockToFuture
+  - domdom82
+  - MartinWeindel
+  - ScheererJ
+  gardener-extension-shoot-networking-problemdetector-approvers:
+  - axel7born
+  - DockToFuture
+  - domdom82
+  - MartinWeindel
+  - ScheererJ
