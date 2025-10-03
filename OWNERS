@@ -1,0 +1,6 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- gardener-extension-shoot-networking-problemdetector-reviewers
+approvers:
+- gardener-extension-shoot-networking-problemdetector-approvers
