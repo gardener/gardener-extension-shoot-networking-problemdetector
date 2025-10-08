@@ -60,6 +60,8 @@ spec:
             topologyKey: "kubernetes.io/hostname"
       {{- end }}
       priorityClassName: gardener-system-900
+      securityContext:
+        runAsNonRoot: true
       serviceAccountName: gardener-extension-{{ .Values.serviceName }}
       containers:
       - name: gardener-extension-{{ .Values.serviceName }}
@@ -67,6 +69,8 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop: [ALL]
         command:
         - /gardener-extension-shoot-networking-problemdetector
         - --config=/etc/shoot-networking-problemdetector/config.yaml
