@@ -6,7 +6,7 @@ toolchain go1.25.3
 
 require (
 	github.com/ahmetb/gen-crd-api-reference-docs v0.3.0
-	github.com/gardener/gardener v1.131.0
+	github.com/gardener/gardener v1.131.1
 	github.com/gardener/network-problem-detector v0.29.0
 	github.com/go-logr/logr v1.4.3
 	github.com/onsi/ginkgo/v2 v2.27.1
