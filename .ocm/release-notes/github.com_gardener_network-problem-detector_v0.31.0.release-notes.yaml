@@ -13,14 +13,3 @@ release_notes:
   mimetype: text/markdown
   reference: '[#135](https://github.com/gardener/network-problem-detector/pull/135)'
   type: standard
-- audience: operator
-  author:
-    hostname: github.com
-    type: githubUser
-    username: MartinWeindel
-  category: other
-  contents: Increase memory limit from 64 to 80 Mi for agent daemon sets to be below
-    70% of sporadic "high" memory usage.
-  mimetype: text/markdown
-  reference: '[#133](https://github.com/gardener/network-problem-detector/pull/133)'
-  type: standard
