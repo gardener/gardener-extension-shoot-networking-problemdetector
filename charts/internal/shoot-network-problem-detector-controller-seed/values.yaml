@@ -17,8 +17,6 @@ resources:
   requests:
    cpu: 10m
    memory: 48Mi
-  limits:
-   memory: 256Mi
 
 nodeSelector: {}
 tolerations: []
