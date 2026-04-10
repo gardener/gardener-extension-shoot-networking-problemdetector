@@ -85,6 +85,7 @@ generate: $(CONTROLLER_GEN) $(EXTENSION_GEN) $(GEN_CRD_API_REFERENCE_DOCS) $(HEL
 	@REPO_ROOT=$(REPO_ROOT) GARDENER_HACK_DIR=$(GARDENER_HACK_DIR) hack/update-codegen.sh
 	@REPO_ROOT=$(REPO_ROOT) GARDENER_HACK_DIR=$(GARDENER_HACK_DIR) bash $(GARDENER_HACK_DIR)/generate-sequential.sh ./charts/... ./cmd/... ./example/... ./pkg/... ./test/...
 	@$(MAKE) format
+	@./hack/generate-renovate-ignore-deps.sh
 
 .PHONY: format
 format: $(GOIMPORTS) $(GOIMPORTSREVISER)
