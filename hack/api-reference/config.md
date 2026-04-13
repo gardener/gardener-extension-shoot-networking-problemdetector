@@ -4,19 +4,20 @@
 <a href="#shoot-networking-problemdetector.extensions.config.gardener.cloud%2fv1alpha1">shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1</a>
 </li>
 </ul>
+
 <h2 id="shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1">shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1</h2>
 <p>
-<p>Package v1alpha1 contains the shoot networking filter extension configuration.</p>
+
 </p>
-Resource Types:
-<ul><li>
-<a href="#shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.Configuration">Configuration</a>
-</li></ul>
-<h3 id="shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.Configuration">Configuration
+
+<h3 id="configuration">Configuration
 </h3>
+
+
 <p>
-<p>Configuration contains information about the network problem detector configuration.</p>
+Configuration contains information about the network problem detector configuration.
 </p>
+
 <table>
 <thead>
 <tr>
@@ -25,30 +26,12 @@ Resource Types:
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>
-<code>apiVersion</code></br>
-string</td>
-<td>
-<code>
-shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1
-</code>
-</td>
-</tr>
-<tr>
-<td>
-<code>kind</code></br>
-string
-</td>
-<td><code>Configuration</code></td>
-</tr>
+
 <tr>
 <td>
 <code>networkProblemDetector</code></br>
 <em>
-<a href="#shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.NetworkProblemDetector">
-NetworkProblemDetector
-</a>
+<a href="#networkproblemdetector">NetworkProblemDetector</a>
 </em>
 </td>
 <td>
@@ -60,9 +43,7 @@ NetworkProblemDetector
 <td>
 <code>healthCheckConfig</code></br>
 <em>
-<a href="https://github.com/gardener/gardener/extensions/pkg/apis/config">
-github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1.HealthCheckConfig
-</a>
+<a href="#healthcheckconfig">HealthCheckConfig</a>
 </em>
 </td>
 <td>
@@ -70,17 +51,23 @@ github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1.HealthCheckConf
 <p>HealthCheckConfig is the config for the health check controller.</p>
 </td>
 </tr>
+
 </tbody>
 </table>
-<h3 id="shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.K8sExporter">K8sExporter
+
+
+<h3 id="k8sexporter">K8sExporter
 </h3>
+
+
 <p>
-(<em>Appears on:</em>
-<a href="#shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.NetworkProblemDetector">NetworkProblemDetector</a>)
+(<em>Appears on:</em><a href="#networkproblemdetector">NetworkProblemDetector</a>)
 </p>
+
 <p>
-<p>K8sExporter contains information for the K8s exporter which patches the node conditions periodically if enabled.</p>
+K8sExporter contains information for the K8s exporter which patches the node conditions periodically if enabled.
 </p>
+
 <table>
 <thead>
 <tr>
@@ -89,11 +76,12 @@ github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1.HealthCheckConf
 </tr>
 </thead>
 <tbody>
+
 <tr>
 <td>
 <code>enabled</code></br>
 <em>
-bool
+boolean
 </em>
 </td>
 <td>
@@ -104,9 +92,7 @@ bool
 <td>
 <code>heartbeatPeriod</code></br>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#duration-v1-meta">
-Kubernetes meta/v1.Duration
-</a>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#duration-v1-meta">Duration</a>
 </em>
 </td>
 <td>
@@ -118,25 +104,31 @@ Kubernetes meta/v1.Duration
 <td>
 <code>minFailingPeerNodeShare</code></br>
 <em>
-float64
+float
 </em>
 </td>
 <td>
 <em>(Optional)</em>
-<p>MinFailingPeerNodeShare if &gt; 0, reports node conditions <code>ClusterNetworkProblems</code> or <code>HostNetworkProblems</code> for node checks only if minimum share of destination peer nodes are failing. Valid range: [0.0,1.0]</p>
+<p>MinFailingPeerNodeShare if > 0, reports node conditions `ClusterNetworkProblems` or `HostNetworkProblems` for node checks only if minimum share of destination peer nodes are failing. Valid range: [0.0,1.0]</p>
 </td>
 </tr>
+
 </tbody>
 </table>
-<h3 id="shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.NetworkProblemDetector">NetworkProblemDetector
+
+
+<h3 id="networkproblemdetector">NetworkProblemDetector
 </h3>
+
+
 <p>
-(<em>Appears on:</em>
-<a href="#shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.Configuration">Configuration</a>)
+(<em>Appears on:</em><a href="#configuration">Configuration</a>)
 </p>
+
 <p>
-<p>NetworkProblemDetector contains the configuration for the network problem detector.</p>
+NetworkProblemDetector contains the configuration for the network problem detector.
 </p>
+
 <table>
 <thead>
 <tr>
@@ -145,13 +137,12 @@ float64
 </tr>
 </thead>
 <tbody>
+
 <tr>
 <td>
 <code>defaultPeriod</code></br>
 <em>
-<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#duration-v1-meta">
-Kubernetes meta/v1.Duration
-</a>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#duration-v1-meta">Duration</a>
 </em>
 </td>
 <td>
@@ -163,7 +154,7 @@ Kubernetes meta/v1.Duration
 <td>
 <code>maxPeerNodes</code></br>
 <em>
-int
+integer
 </em>
 </td>
 <td>
@@ -175,7 +166,7 @@ int
 <td>
 <code>pingEnabled</code></br>
 <em>
-bool
+boolean
 </em>
 </td>
 <td>
@@ -187,9 +178,7 @@ bool
 <td>
 <code>k8sExporter</code></br>
 <em>
-<a href="#shoot-networking-problemdetector.extensions.config.gardener.cloud/v1alpha1.K8sExporter">
-K8sExporter
-</a>
+<a href="#k8sexporter">K8sExporter</a>
 </em>
 </td>
 <td>
@@ -197,9 +186,8 @@ K8sExporter
 <p>K8sExporter configures the K8s exporter for updating node conditions and creating events.</p>
 </td>
 </tr>
+
 </tbody>
 </table>
-<hr/>
-<p><em>
-Generated with <a href="https://github.com/ahmetb/gen-crd-api-reference-docs">gen-crd-api-reference-docs</a>
-</em></p>
+
+
