@@ -71,7 +71,7 @@ func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, ex *extension
 	}
 
 	if !controller.IsHibernated(cluster) {
-		if err := a.createShootResources(ctx, cluster, namespace); err != nil {
+		if err := a.createShootResources(ctx, cluster, namespace, ex); err != nil {
 			return err
 		}
 	}
@@ -111,11 +111,12 @@ func (a *actuator) createSeedResources(ctx context.Context, log logr.Logger, clu
 	return a.createManagedResource(ctx, namespace, constants.ManagedResourceNamesControllerSeed, "seed", renderer, constants.NetworkProblemDetectorControllerChartNameSeed, namespace, values, nil)
 }
 
-func (a *actuator) createShootResources(ctx context.Context, cluster *controller.Cluster, namespace string) error {
+func (a *actuator) createShootResources(ctx context.Context, cluster *controller.Cluster, namespace string, ex *extensionsv1alpha1.Extension) error {
 	defaultPeriod := 5 * time.Second
 	maxPeerNodes := 25
 	pingEnabled := false
 	var k8sExporter *config.K8sExporter
+	var independentProbes []config.IndependentProbe
 	if a.serviceConfig.NetworkProblemDetector != nil {
 		if a.serviceConfig.NetworkProblemDetector.DefaultPeriod != nil {
 			defaultPeriod = a.serviceConfig.NetworkProblemDetector.DefaultPeriod.Duration
@@ -124,11 +125,22 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 			maxPeerNodes = *a.serviceConfig.NetworkProblemDetector.MaxPeerNodes
 		}
 		if a.serviceConfig.NetworkProblemDetector.PingEnabled != nil {
-			pingEnabled = !*a.serviceConfig.NetworkProblemDetector.PingEnabled
+			pingEnabled = *a.serviceConfig.NetworkProblemDetector.PingEnabled
 		}
 		if a.serviceConfig.NetworkProblemDetector.K8sExporter != nil && a.serviceConfig.NetworkProblemDetector.K8sExporter.Enabled {
 			k8sExporter = a.serviceConfig.NetworkProblemDetector.K8sExporter
 		}
+		independentProbes = append(independentProbes, a.serviceConfig.NetworkProblemDetector.IndependentProbes...)
+	}
+
+	// Decode per-shoot independent probes from the Extension's providerConfig (if present).
+	shootCfg, err := decodeShootProviderConfig(ex.Spec.ProviderConfig)
+	if err != nil {
+		return fmt.Errorf("failed to decode shoot provider config: %w", err)
+	}
+	independentProbes = append(independentProbes, shootCfg.IndependentProbes...)
+	if shootCfg.PingEnabled != nil {
+		pingEnabled = *shootCfg.PingEnabled
 	}
 
 	ipfamilies := cluster.Shoot.Spec.Networking.IPFamilies
@@ -140,7 +152,7 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 		ipFamiliesStr = string(ipfamilies[0]) + "," + string(ipfamilies[1])
 	}
 
-	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, k8sExporter, maxPeerNodes, ipFamiliesStr)
+	shootResources, err := a.getShootAgentResources(defaultPeriod, pingEnabled, k8sExporter, maxPeerNodes, ipFamiliesStr, independentProbes)
 	if err != nil {
 		return err
 	}
@@ -261,7 +273,7 @@ func (a *actuator) Migrate(ctx context.Context, log logr.Logger, ex *extensionsv
 	return a.Delete(ctx, log, ex)
 }
 
-func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled bool, k8sExporter *config.K8sExporter, maxPeerNodes int, ipFamilies string) (map[string][]byte, error) {
+func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabled bool, k8sExporter *config.K8sExporter, maxPeerNodes int, ipFamilies string, independentProbes []config.IndependentProbe) (map[string][]byte, error) {
 	shootRegistry := managedresources.NewRegistry(kubernetes.ShootScheme, kubernetes.ShootCodec, kubernetes.ShootSerializer)
 
 	image, err := imagevector.ImageVector().FindImage(constants.AgentImageName)
@@ -278,6 +290,7 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 		PingEnabled:                  pingEnabled,
 		PriorityClassName:            corev1betaconstants.PriorityClassNameShootSystem900,
 		AdditionalLabels: map[string]string{
+			"networking.gardener.cloud/to-public-networks":   "allowed",
 			"networking.gardener.cloud/to-apiserver":        "allowed",
 			"networking.gardener.cloud/to-dns":              "allowed",
 			"networking.gardener.cloud/to-from-nwpd-agents": "allowed",
@@ -317,7 +330,7 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 	}
 	objects = append(objects, clusterCM)
 
-	agentCM, err := buildDefaultAgentConfigMap(deployConfig)
+	agentCM, err := buildDefaultAgentConfigMap(deployConfig, independentProbes)
 	if err != nil {
 		return nil, err
 	}
@@ -389,9 +402,12 @@ func buildAgentNetworkPolicy() client.Object {
 	}
 }
 
-func buildDefaultAgentConfigMap(deployConfig *deploy.AgentDeployConfig) (*corev1.ConfigMap, error) {
+func buildDefaultAgentConfigMap(deployConfig *deploy.AgentDeployConfig, independentProbes []config.IndependentProbe) (*corev1.ConfigMap, error) {
 	agentConfig, err := deployConfig.BuildAgentConfig()
 	if err != nil {
+		return nil, err
+	}
+	if err := addIndependentProbeJobs(agentConfig, independentProbes); err != nil {
 		return nil, err
 	}
 	agentCM, err := deploy.BuildAgentConfigMap(agentConfig)
