@@ -976,6 +976,236 @@
         "x": 0,
         "y": 30
       },
+      "id": 100,
+      "panels": [
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "description": "Shows count of observations with status ok and failed for independent (infrastructure) probes.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "fill": 4,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 10,
+            "w": 12,
+            "x": 0,
+            "y": 31
+          },
+          "hiddenSeries": false,
+          "id": 101,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.5.16",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "count by (jobid) (rate(nwpd_aggregated_observations{status=\"ok\",jobid=~\"indep-.+\",src=~\"$source\",dest=~\"$dest\"}[$__rate_interval]) > 0)",
+              "interval": "",
+              "legendFormat": "ok {{jobid}}",
+              "refId": "A"
+            },
+            {
+              "exemplar": true,
+              "expr": "count by (jobid) (rate(nwpd_aggregated_observations{status=\"failed\",jobid=~\"indep-.+\",src=~\"$source\",dest=~\"$dest\"}[$__rate_interval]) > 0)",
+              "hide": false,
+              "interval": "",
+              "legendFormat": "failed {{jobid}}",
+              "refId": "B"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Independent Probe Status",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": "Observation Count",
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": null,
+          "description": "Latency/Duration of independent (infrastructure) probe operations, grouped by jobid. Shows q50 (median) and q99 (tail) latency.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "fill": 0,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 10,
+            "w": 12,
+            "x": 12,
+            "y": 31
+          },
+          "hiddenSeries": false,
+          "id": 102,
+          "legend": {
+            "alignAsTable": false,
+            "avg": false,
+            "current": false,
+            "max": false,
+            "min": false,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": false
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.5.16",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "exemplar": true,
+              "expr": "quantile by (jobid) (0.5, nwpd_aggregated_observations_latency_secs{jobid=~\"indep-.+\",src=~\"$source\",dest=~\"$dest\"})",
+              "interval": "",
+              "legendFormat": "q50 {{jobid}}",
+              "format": "time_series",
+              "refId": "A"
+            },
+            {
+              "exemplar": true,
+              "expr": "quantile by (jobid) (0.99, nwpd_aggregated_observations_latency_secs{jobid=~\"indep-.+\",src=~\"$source\",dest=~\"$dest\"})",
+              "interval": "",
+              "legendFormat": "q99 {{jobid}}",
+              "refId": "B",
+              "hide": false
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Independent Probe Latency",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "s",
+              "label": "Seconds",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        }
+      ],
+      "title": "Independent Probes",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
       "id": 21,
       "panels": [
         {
@@ -1131,7 +1361,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 32
       },
       "id": 57,
       "panels": [],
@@ -1163,7 +1393,7 @@
         "h": 5,
         "w": 12,
         "x": 0,
-        "y": 32
+        "y": 33
       },
       "hiddenSeries": false,
       "id": 27,
@@ -1271,7 +1501,7 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 32
+        "y": 33
       },
       "hiddenSeries": false,
       "id": 53,
