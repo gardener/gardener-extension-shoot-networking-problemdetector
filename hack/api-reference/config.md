@@ -61,7 +61,7 @@ Configuration contains information about the network problem detector configurat
 
 
 <p>
-(<em>Appears on:</em><a href="#networkproblemdetector">NetworkProblemDetector</a>)
+(<em>Appears on:</em><a href="#networkproblemdetector">NetworkProblemDetector</a>, <a href="#shootproviderconfig">ShootProviderConfig</a>)
 </p>
 
 <p>
@@ -310,5 +310,51 @@ boolean
 <p>
 ProbeProtocol defines the protocol for an independent probe.
 </p>
+
+
+<h3 id="shootproviderconfig">ShootProviderConfig
+</h3>
+
+
+<p>
+ShootProviderConfig is the per-shoot configuration stored in Extension.spec.providerConfig.
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+<td>
+<code>pingEnabled</code></br>
+<em>
+boolean
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PingEnabled enables ICMP ping checks for this shoot.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>independentProbes</code></br>
+<em>
+<a href="#independentprobe">IndependentProbe</a> array
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IndependentProbes defines additional probe jobs for this shoot.</p>
+</td>
+</tr>
+
+</tbody>
+</table>
 
 

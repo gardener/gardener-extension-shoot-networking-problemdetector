@@ -136,14 +136,14 @@ var _ = Describe("activator methods", func() {
 				agentConfig, err := deployConfig.BuildAgentConfig()
 				Expect(err).To(BeNil())
 
-				period := metav1.Duration{Duration: 30 * time.Second}
+				period := metav1.Duration{Duration: 120 * time.Second}
 				probes := []config.IndependentProbe{
 					{JobID: "check-slow", Protocol: config.ProbeProtocolTCP, Host: "slow.example.com", Port: 8080, Period: &period},
 				}
 				Expect(addIndependentProbeJobs(agentConfig, probes)).To(Succeed())
 
 				hostJob := agentConfig.HostNetwork.Jobs[len(agentConfig.HostNetwork.Jobs)-1]
-				Expect(hostJob.Args).To(ContainElements("--period", "30s"))
+				Expect(hostJob.Args).To(ContainElements("--period", "2m0s"))
 			})
 
 			It("returns error for duplicate jobID", func() {

@@ -83,6 +83,17 @@ type NetworkProblemDetector struct {
 	IndependentProbes []IndependentProbe `json:"independentProbes,omitempty"`
 }
 
+// ShootProviderConfig is the per-shoot configuration stored in Extension.spec.providerConfig.
+type ShootProviderConfig struct {
+	metav1.TypeMeta `json:",inline"`
+	// PingEnabled enables ICMP ping checks for this shoot.
+	// +optional
+	PingEnabled *bool `json:"pingEnabled,omitempty"`
+	// IndependentProbes defines additional probe jobs for this shoot.
+	// +optional
+	IndependentProbes []IndependentProbe `json:"independentProbes,omitempty"`
+}
+
 // K8sExporter contains information for the K8s exporter which patches the node conditions periodically if enabled.
 type K8sExporter struct {
 	// Enabled if true, the K8s exporter is active

@@ -11,7 +11,6 @@ import (
 
 	extensionswebhook "github.com/gardener/gardener/extensions/pkg/webhook"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -21,14 +20,6 @@ import (
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/validation"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
 )
-
-// shootProviderConfig mirrors the JSON shape of the per-shoot providerConfig.
-// It is intentionally not a registered API type; plain JSON unmarshaling is used.
-type shootProviderConfig struct {
-	metav1.TypeMeta   `json:",inline"`
-	PingEnabled       *bool                             `json:"pingEnabled,omitempty"`
-	IndependentProbes []configv1alpha1.IndependentProbe `json:"independentProbes,omitempty"`
-}
 
 type shoot struct{}
 
@@ -61,7 +52,7 @@ func validateProviderConfig(rawExt *runtime.RawExtension, fldPath *field.Path) e
 	if rawExt == nil || len(rawExt.Raw) == 0 {
 		return nil
 	}
-	var cfg shootProviderConfig
+	var cfg configv1alpha1.ShootProviderConfig
 	if err := json.Unmarshal(rawExt.Raw, &cfg); err != nil {
 		return field.Invalid(fldPath, string(rawExt.Raw),
 			fmt.Sprintf("failed to unmarshal providerConfig: %v", err))
