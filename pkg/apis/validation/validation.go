@@ -19,8 +19,11 @@ import (
 func ValidateIndependentProbes(probes []config.IndependentProbe) error {
 	seen := make(map[string]struct{}, len(probes))
 	for _, probe := range probes {
-		if strings.TrimSpace(probe.JobID) == "" {
+		if probe.JobID == "" {
 			return fmt.Errorf("independent probe has empty jobID")
+		}
+		if probe.JobID != strings.TrimSpace(probe.JobID) {
+			return fmt.Errorf("independent probe jobID %q must not have leading or trailing whitespace", probe.JobID)
 		}
 		if _, exists := seen[probe.JobID]; exists {
 			return fmt.Errorf("duplicate independent probe jobID %q", probe.JobID)
@@ -30,8 +33,13 @@ func ValidateIndependentProbes(probes []config.IndependentProbe) error {
 		if strings.TrimSpace(probe.Host) == "" && strings.TrimSpace(probe.IPAddress) == "" {
 			return fmt.Errorf("independent probe %q must have host or ipAddress", probe.JobID)
 		}
-		if probe.Host != "" && len(k8svalidation.IsDNS1123Subdomain(probe.Host)) > 0 {
-			return fmt.Errorf("independent probe %q has invalid host %q: must be a valid hostname", probe.JobID, probe.Host)
+		if probe.Host != "" {
+			if net.ParseIP(probe.Host) != nil {
+				return fmt.Errorf("independent probe %q has invalid host %q: must be a hostname, not an IP address (use ipAddress field instead)", probe.JobID, probe.Host)
+			}
+			if len(k8svalidation.IsDNS1123Subdomain(probe.Host)) > 0 {
+				return fmt.Errorf("independent probe %q has invalid host %q: must be a valid hostname", probe.JobID, probe.Host)
+			}
 		}
 		if probe.IPAddress != "" && net.ParseIP(probe.IPAddress) == nil {
 			return fmt.Errorf("independent probe %q has invalid ipAddress %q: must be a valid IP address", probe.JobID, probe.IPAddress)

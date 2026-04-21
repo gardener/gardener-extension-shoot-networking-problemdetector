@@ -9,20 +9,12 @@ import (
 	"fmt"
 
 	nwpdconfig "github.com/gardener/network-problem-detector/pkg/common/config"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
 	configv1alpha1 "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config/v1alpha1"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/validation"
 )
-
-// shootProviderConfig is the per-shoot configuration decoded from Extension.spec.providerConfig.
-type shootProviderConfig struct {
-	metav1.TypeMeta   `json:",inline"`
-	PingEnabled       *bool                             `json:"pingEnabled,omitempty"`
-	IndependentProbes []configv1alpha1.IndependentProbe `json:"independentProbes,omitempty"`
-}
 
 // decodedShootConfig holds the decoded per-shoot configuration.
 type decodedShootConfig struct {
@@ -36,7 +28,7 @@ func decodeShootProviderConfig(rawExt *runtime.RawExtension) (decodedShootConfig
 	if rawExt == nil || len(rawExt.Raw) == 0 {
 		return decodedShootConfig{}, nil
 	}
-	var cfg shootProviderConfig
+	var cfg configv1alpha1.ShootProviderConfig
 	if err := json.Unmarshal(rawExt.Raw, &cfg); err != nil {
 		return decodedShootConfig{}, fmt.Errorf("failed to unmarshal shoot provider config: %w", err)
 	}

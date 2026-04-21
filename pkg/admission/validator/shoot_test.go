@@ -8,10 +8,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/gardener/gardener/pkg/apis/core"
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/admission/validator"
@@ -19,22 +18,15 @@ import (
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/constants"
 )
 
-// shootProviderConfig mirrors the JSON shape used in tests.
-type shootProviderConfig struct {
-	metav1.TypeMeta   `json:",inline"`
-	PingEnabled       *bool                             `json:"pingEnabled,omitempty"`
-	IndependentProbes []configv1alpha1.IndependentProbe `json:"independentProbes,omitempty"`
-}
-
-func marshalProviderConfig(cfg shootProviderConfig) *runtime.RawExtension {
+func marshalProviderConfig(cfg configv1alpha1.ShootProviderConfig) *runtime.RawExtension {
 	raw, err := json.Marshal(cfg)
 	Expect(err).NotTo(HaveOccurred())
 	return &runtime.RawExtension{Raw: raw}
 }
 
-func newShoot(providerConfig *runtime.RawExtension) *core.Shoot {
-	shoot := &core.Shoot{}
-	shoot.Spec.Extensions = []core.Extension{
+func newShoot(providerConfig *runtime.RawExtension) *gardencorev1beta1.Shoot {
+	shoot := &gardencorev1beta1.Shoot{}
+	shoot.Spec.Extensions = []gardencorev1beta1.Extension{
 		{
 			Type:           constants.ExtensionType,
 			ProviderConfig: providerConfig,
@@ -51,8 +43,8 @@ var _ = Describe("ShootValidator", func() {
 
 	Describe("Validate", func() {
 		It("returns nil when no extension of the correct type is present", func() {
-			shoot := &core.Shoot{}
-			shoot.Spec.Extensions = []core.Extension{{Type: "some-other-extension"}}
+			shoot := &gardencorev1beta1.Shoot{}
+			shoot.Spec.Extensions = []gardencorev1beta1.Extension{{Type: "some-other-extension"}}
 			Expect(val.Validate(ctx, shoot, nil)).To(Succeed())
 		})
 
@@ -62,14 +54,14 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns nil when ProviderConfig has no independentProbes", func() {
-			cfg := shootProviderConfig{}
+			cfg := configv1alpha1.ShootProviderConfig{}
 			shoot := newShoot(marshalProviderConfig(cfg))
 			Expect(val.Validate(ctx, shoot, nil)).To(Succeed())
 		})
 
 		It("returns nil when pingEnabled is set but no independentProbes", func() {
 			t := true
-			cfg := shootProviderConfig{PingEnabled: &t}
+			cfg := configv1alpha1.ShootProviderConfig{PingEnabled: &t}
 			shoot := newShoot(marshalProviderConfig(cfg))
 			Expect(val.Validate(ctx, shoot, nil)).To(Succeed())
 		})
@@ -80,7 +72,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns error when probe has empty jobID", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 80},
 				},
@@ -90,7 +82,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns error when probe has duplicate jobID", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 80},
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "other.com", Port: 443},
@@ -101,7 +93,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns error when TCP probe has neither host nor ipAddress", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Port: 80},
 				},
@@ -111,7 +103,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns error when TCP probe has port 0", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 0},
 				},
@@ -121,7 +113,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns error when TCP probe has port > 65535", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 65536},
 				},
@@ -131,7 +123,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns error when ipAddress is not a valid IP", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", IPAddress: "not-an-ip", Port: 80},
 				},
@@ -141,7 +133,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns error when HTTPS probe has no host", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolHTTPS, Port: 443},
 				},
@@ -151,7 +143,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns error when Ping probe has no ipAddress", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolPing, Host: "example.com"},
 				},
@@ -161,7 +153,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns error when probe has unknown protocol", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "probe1", Protocol: "UDP", Host: "example.com", Port: 53},
 				},
@@ -171,7 +163,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns nil for a valid TCP probe", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "tcp-probe", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 443},
 				},
@@ -181,7 +173,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns nil for a valid TCP probe with ipAddress override", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "tcp-probe", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", IPAddress: "1.2.3.4", Port: 443},
 				},
@@ -191,7 +183,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns nil for a valid HTTPS probe", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "https-probe", Protocol: configv1alpha1.ProbeProtocolHTTPS, Host: "example.com", Port: 443},
 				},
@@ -201,7 +193,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns nil for a valid Ping probe", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "ping-probe", Protocol: configv1alpha1.ProbeProtocolPing, Host: "example.com", IPAddress: "1.2.3.4"},
 				},
@@ -211,7 +203,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns nil for multiple valid probes", func() {
-			cfg := shootProviderConfig{
+			cfg := configv1alpha1.ShootProviderConfig{
 				IndependentProbes: []configv1alpha1.IndependentProbe{
 					{JobID: "tcp-probe", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 80},
 					{JobID: "https-probe", Protocol: configv1alpha1.ProbeProtocolHTTPS, Host: "api.example.com", Port: 443},
@@ -223,7 +215,7 @@ var _ = Describe("ShootValidator", func() {
 		})
 
 		It("returns error for wrong object type", func() {
-			Expect(val.Validate(ctx, &core.Seed{}, nil)).To(HaveOccurred())
+			Expect(val.Validate(ctx, &gardencorev1beta1.Seed{}, nil)).To(HaveOccurred())
 		})
 	})
 })
