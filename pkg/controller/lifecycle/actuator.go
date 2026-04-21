@@ -290,7 +290,7 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, pingEnabl
 		PingEnabled:                  pingEnabled,
 		PriorityClassName:            corev1betaconstants.PriorityClassNameShootSystem900,
 		AdditionalLabels: map[string]string{
-			"networking.gardener.cloud/to-public-networks":   "allowed",
+			"networking.gardener.cloud/to-public-networks":  "allowed",
 			"networking.gardener.cloud/to-apiserver":        "allowed",
 			"networking.gardener.cloud/to-dns":              "allowed",
 			"networking.gardener.cloud/to-from-nwpd-agents": "allowed",
