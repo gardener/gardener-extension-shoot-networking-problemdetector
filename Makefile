@@ -54,6 +54,7 @@ docker-login:
 .PHONY: docker-images
 docker-images:
 	@docker build --platform=linux/$(GOARCH) --build-arg EFFECTIVE_VERSION=$(EFFECTIVE_VERSION) -t $(IMAGE_PREFIX)/$(NAME):$(VERSION) -t $(IMAGE_PREFIX)/$(NAME):latest -f Dockerfile -m 6g --target $(EXTENSION_PREFIX)-$(NAME) .
+	@docker build --platform=linux/$(GOARCH) --build-arg EFFECTIVE_VERSION=$(EFFECTIVE_VERSION) -t $(IMAGE_PREFIX)/$(NAME)-admission:$(VERSION) -t $(IMAGE_PREFIX)/$(NAME)-admission:latest -f Dockerfile -m 6g --target $(EXTENSION_PREFIX)-$(NAME)-admission .
 
 #####################################################################
 # Rules for verification, formatting, linting, testing and cleaning #

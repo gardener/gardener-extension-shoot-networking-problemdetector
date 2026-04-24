@@ -56,6 +56,101 @@ Configuration contains information about the network problem detector configurat
 </table>
 
 
+<h3 id="independentprobe">IndependentProbe
+</h3>
+
+
+<p>
+(<em>Appears on:</em><a href="#networkproblemdetector">NetworkProblemDetector</a>, <a href="#shootproviderconfig">ShootProviderConfig</a>)
+</p>
+
+<p>
+IndependentProbe defines a single network probe that is logically decoupled from the Shoot/Seed cluster topology.
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+<td>
+<code>jobID</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>JobID is the unique identifier for this probe job.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>protocol</code></br>
+<em>
+<a href="#probeprotocol">ProbeProtocol</a>
+</em>
+</td>
+<td>
+<p>Protocol is the probe protocol: TCP or HTTPS.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>host</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Host is the target hostname used for labeling and HTTPS checks.<br />Optional for TCP probes when ipAddress is set; required for HTTPS probes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ipAddress</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IPAddress optionally overrides the IP address used for the TCP connection.<br />When set, the TCP check connects to this IP while Host is still used as the endpoint label.<br />Has no effect for HTTPS probes.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>port</code></br>
+<em>
+integer
+</em>
+</td>
+<td>
+<p>Port is the target port (1-65535).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>period</code></br>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.33/#duration-v1-meta">Duration</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Period optionally overrides the default check period for this probe.</p>
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
 <h3 id="k8sexporter">K8sExporter
 </h3>
 
@@ -184,6 +279,78 @@ boolean
 <td>
 <em>(Optional)</em>
 <p>K8sExporter configures the K8s exporter for updating node conditions and creating events.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>independentProbes</code></br>
+<em>
+<a href="#independentprobe">IndependentProbe</a> array
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IndependentProbes defines probes that run independently of the Shoot/Seed cluster topology,<br />enabling infrastructure-level network diagnostics.</p>
+</td>
+</tr>
+
+</tbody>
+</table>
+
+
+<h3 id="probeprotocol">ProbeProtocol
+</h3>
+<p><em>Underlying type: string</em></p>
+
+
+<p>
+(<em>Appears on:</em><a href="#independentprobe">IndependentProbe</a>)
+</p>
+
+<p>
+ProbeProtocol defines the protocol for an independent probe.
+</p>
+
+
+<h3 id="shootproviderconfig">ShootProviderConfig
+</h3>
+
+
+<p>
+ShootProviderConfig is the per-shoot configuration stored in Extension.spec.providerConfig.
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+<td>
+<code>pingEnabled</code></br>
+<em>
+boolean
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PingEnabled enables ICMP ping checks for this shoot.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>independentProbes</code></br>
+<em>
+<a href="#independentprobe">IndependentProbe</a> array
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>IndependentProbes defines additional probe jobs for this shoot.</p>
 </td>
 </tr>
 

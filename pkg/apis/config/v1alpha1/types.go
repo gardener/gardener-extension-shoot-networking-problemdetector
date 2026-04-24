@@ -25,6 +25,40 @@ type Configuration struct {
 	HealthCheckConfig *healthcheckconfigv1alpha1.HealthCheckConfig `json:"healthCheckConfig,omitempty"`
 }
 
+// ProbeProtocol defines the protocol for an independent probe.
+type ProbeProtocol string
+
+const (
+	// ProbeProtocolTCP uses a TCP connection check.
+	ProbeProtocolTCP ProbeProtocol = "TCP"
+	// ProbeProtocolHTTPS uses an HTTPS GET request (TLS without certificate verification).
+	ProbeProtocolHTTPS ProbeProtocol = "HTTPS"
+	// ProbeProtocolPing uses an ICMP ping check. Requires ipAddress to be set.
+	ProbeProtocolPing ProbeProtocol = "Ping"
+)
+
+// IndependentProbe defines a single network probe that is logically decoupled from the Shoot/Seed cluster topology.
+type IndependentProbe struct {
+	// JobID is the unique identifier for this probe job.
+	JobID string `json:"jobID"`
+	// Protocol is the probe protocol: TCP or HTTPS.
+	Protocol ProbeProtocol `json:"protocol"`
+	// Host is the target hostname used for labeling and HTTPS checks.
+	// Optional for TCP probes when ipAddress is set; required for HTTPS probes.
+	// +optional
+	Host string `json:"host,omitempty"`
+	// IPAddress optionally overrides the IP address used for the TCP connection.
+	// When set, the TCP check connects to this IP while Host is still used as the endpoint label.
+	// Has no effect for HTTPS probes.
+	// +optional
+	IPAddress string `json:"ipAddress,omitempty"`
+	// Port is the target port (1-65535).
+	Port int `json:"port"`
+	// Period optionally overrides the default check period for this probe.
+	// +optional
+	Period *metav1.Duration `json:"period,omitempty"`
+}
+
 // NetworkProblemDetector contains the configuration for the network problem detector.
 type NetworkProblemDetector struct {
 	// DefaultPeriod optionally overrides the default period for jobs running in the agent.
@@ -42,6 +76,22 @@ type NetworkProblemDetector struct {
 	// K8sExporter configures the K8s exporter for updating node conditions and creating events.
 	// +optional
 	K8sExporter *K8sExporter `json:"k8sExporter,omitempty"`
+
+	// IndependentProbes defines probes that run independently of the Shoot/Seed cluster topology,
+	// enabling infrastructure-level network diagnostics.
+	// +optional
+	IndependentProbes []IndependentProbe `json:"independentProbes,omitempty"`
+}
+
+// ShootProviderConfig is the per-shoot configuration stored in Extension.spec.providerConfig.
+type ShootProviderConfig struct {
+	metav1.TypeMeta `json:",inline"`
+	// PingEnabled enables ICMP ping checks for this shoot.
+	// +optional
+	PingEnabled *bool `json:"pingEnabled,omitempty"`
+	// IndependentProbes defines additional probe jobs for this shoot.
+	// +optional
+	IndependentProbes []IndependentProbe `json:"independentProbes,omitempty"`
 }
 
 // K8sExporter contains information for the K8s exporter which patches the node conditions periodically if enabled.

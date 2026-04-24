@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2026 SAP SE or an SAP affiliate company and Gardener contributors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+gardener:
+  virtualCluster:
+    enabled: true
+    serviceAccount: {}
+#   name: gardener-extension-shoot-networking-problemdetector-admission
+#   namespace: kube-system
