@@ -5,11 +5,13 @@
 package lifecycle
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
+	"strings"
 
 	nwpdconfig "github.com/gardener/network-problem-detector/pkg/common/config"
 	"k8s.io/apimachinery/pkg/runtime"
+	sigsjson "sigs.k8s.io/json"
 
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
 	configv1alpha1 "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config/v1alpha1"
@@ -18,8 +20,8 @@ import (
 
 // decodedShootConfig holds the decoded per-shoot configuration.
 type decodedShootConfig struct {
-	PingEnabled       *bool
-	IndependentProbes []config.IndependentProbe
+	IcmpEnabled      *bool
+	AdditionalProbes []config.AdditionalProbe
 }
 
 // decodeShootProviderConfig decodes per-shoot configuration from an Extension's ProviderConfig.
@@ -29,35 +31,36 @@ func decodeShootProviderConfig(rawExt *runtime.RawExtension) (decodedShootConfig
 		return decodedShootConfig{}, nil
 	}
 	var cfg configv1alpha1.ShootProviderConfig
-	if err := json.Unmarshal(rawExt.Raw, &cfg); err != nil {
-		return decodedShootConfig{}, fmt.Errorf("failed to unmarshal shoot provider config: %w", err)
+	strictErrs, err := sigsjson.UnmarshalStrict(rawExt.Raw, &cfg)
+	if err != nil || len(strictErrs) > 0 {
+		return decodedShootConfig{}, fmt.Errorf("failed to decode shoot provider config: %w", errors.Join(append(strictErrs, err)...))
 	}
-	probes := make([]config.IndependentProbe, len(cfg.IndependentProbes))
-	for i, p := range cfg.IndependentProbes {
-		probes[i] = config.IndependentProbe{
-			JobID:     p.JobID,
-			Protocol:  config.ProbeProtocol(p.Protocol),
-			Host:      p.Host,
-			IPAddress: p.IPAddress,
-			Port:      p.Port,
-			Period:    p.Period,
+	configv1alpha1.SetDefaults_ShootProviderConfig(&cfg)
+	probes := make([]config.AdditionalProbe, len(cfg.AdditionalProbes))
+	for i, p := range cfg.AdditionalProbes {
+		probes[i] = config.AdditionalProbe{
+			JobID:    p.JobID,
+			Protocol: config.ProbeProtocol(p.Protocol),
+			Host:     p.Host,
+			Port:     p.Port,
+			Period:   p.Period,
 		}
 	}
 	return decodedShootConfig{
-		PingEnabled:       cfg.PingEnabled,
-		IndependentProbes: probes,
+		IcmpEnabled:      cfg.IcmpEnabled,
+		AdditionalProbes: probes,
 	}, nil
 }
 
-// addIndependentProbeJobs appends jobs for independent probes to both HostNetwork and PodNetwork
-// configurations of the agent. Jobs are added with prefixed IDs: "indep-h-<jobID>" for host network
+// addAdditionalProbeJobs appends jobs for additional probes to both HostNetwork and PodNetwork
+// configurations of the agent. Jobs are added with prefixed IDs: "indep-n-<jobID>" for host network
 // and "indep-p-<jobID>" for pod network.
-func addIndependentProbeJobs(agentConfig *nwpdconfig.AgentConfig, probes []config.IndependentProbe) error {
+func addAdditionalProbeJobs(agentConfig *nwpdconfig.AgentConfig, probes []config.AdditionalProbe) error {
 	if len(probes) == 0 {
 		return nil
 	}
 
-	if err := validation.ValidateIndependentProbes(probes); err != nil {
+	if err := validation.ValidateAdditionalProbes(probes); err != nil {
 		return err
 	}
 
@@ -67,12 +70,13 @@ func addIndependentProbeJobs(agentConfig *nwpdconfig.AgentConfig, probes []confi
 			return err
 		}
 
+		protoPrefix := strings.ToLower(string(probe.Protocol))
 		hostJob := nwpdconfig.Job{
-			JobID: "indep-h-" + probe.JobID,
+			JobID: fmt.Sprintf("indep-%s-n-%s", protoPrefix, probe.JobID),
 			Args:  hostArgs,
 		}
 		podJob := nwpdconfig.Job{
-			JobID: "indep-p-" + probe.JobID,
+			JobID: fmt.Sprintf("indep-%s-p-%s", protoPrefix, probe.JobID),
 			Args:  podArgs,
 		}
 
@@ -88,44 +92,25 @@ func addIndependentProbeJobs(agentConfig *nwpdconfig.AgentConfig, probes []confi
 
 // buildProbeArgs returns the job args for the host-network and pod-network jobs for a given probe.
 // Both are identical since the probe target is external and independent of the network context.
-func buildProbeArgs(probe config.IndependentProbe) (hostArgs, podArgs []string, err error) {
+func buildProbeArgs(probe config.AdditionalProbe) (hostArgs, podArgs []string, err error) {
 	var args []string
 	switch probe.Protocol {
 	case config.ProbeProtocolTCP:
-		// checkTCPPort --endpoints <hostname>:<ip>:<port>
-		// IPAddress overrides the IP to connect to while Host remains the label.
-		// Falls back to Host when IPAddress is not set.
-		// Falls back to IPAddress as label when Host is not set.
-		ip := probe.Host
-		if probe.IPAddress != "" {
-			ip = probe.IPAddress
-		}
-		hostname := probe.Host
-		if hostname == "" {
-			hostname = probe.IPAddress
-		}
-		endpoint := fmt.Sprintf("%s:%s:%d", hostname, ip, probe.Port)
-		args = []string{"checkTCPPort", "--endpoints", endpoint}
+		args = []string{"checkTCPPort", "--endpoints", fmt.Sprintf("%s:%s:%d", probe.Host, probe.Host, probe.Port)}
 	case config.ProbeProtocolHTTPS:
-		// checkHTTPSGet --endpoints <hostname>[:<port>]
-		// Uses InsecureSkipVerify: true for non-kube-apiserver endpoints.
-		endpoint := fmt.Sprintf("%s:%d", probe.Host, probe.Port)
-		args = []string{"checkHTTPSGet", "--endpoints", endpoint}
-	case config.ProbeProtocolPing:
-		// pingHost --hosts <hostname>:<ip>
-		// Host is the label; IPAddress is the target (required for ping).
-		hostname := probe.Host
-		if hostname == "" {
-			hostname = probe.IPAddress
-		}
-		args = []string{"pingHost", "--hosts", fmt.Sprintf("%s:%s", hostname, probe.IPAddress)}
+		args = []string{"checkHTTPSGet", "--endpoints", fmt.Sprintf("%s:%d", probe.Host, probe.Port)}
+	case config.ProbeProtocolICMP:
+		// pingHost --hosts <host>:<host>
+		args = []string{"pingHost", "--hosts", fmt.Sprintf("%s:%s", probe.Host, probe.Host)}
 	default:
 		return nil, nil, fmt.Errorf("unsupported probe protocol %q for jobID %q", probe.Protocol, probe.JobID)
 	}
 
 	if probe.Period != nil {
 		args = append(args, "--period", probe.Period.Duration.String())
+	} else {
+		args = append(args, "--period", "60s")
 	}
 
-	return args, append([]string(nil), args...), nil
+	return args, args, nil
 }

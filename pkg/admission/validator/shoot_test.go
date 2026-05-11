@@ -53,15 +53,15 @@ var _ = Describe("ShootValidator", func() {
 			Expect(val.Validate(ctx, shoot, nil)).To(Succeed())
 		})
 
-		It("returns nil when ProviderConfig has no independentProbes", func() {
+		It("returns nil when ProviderConfig has no additionalProbes", func() {
 			cfg := configv1alpha1.ShootProviderConfig{}
 			shoot := newShoot(marshalProviderConfig(cfg))
 			Expect(val.Validate(ctx, shoot, nil)).To(Succeed())
 		})
 
-		It("returns nil when pingEnabled is set but no independentProbes", func() {
+		It("returns nil when icmpEnabled is set but no additionalProbes", func() {
 			t := true
-			cfg := configv1alpha1.ShootProviderConfig{PingEnabled: &t}
+			cfg := configv1alpha1.ShootProviderConfig{IcmpEnabled: &t}
 			shoot := newShoot(marshalProviderConfig(cfg))
 			Expect(val.Validate(ctx, shoot, nil)).To(Succeed())
 		})
@@ -73,7 +73,7 @@ var _ = Describe("ShootValidator", func() {
 
 		It("returns error when probe has empty jobID", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
 					{JobID: "", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 80},
 				},
 			}
@@ -83,7 +83,7 @@ var _ = Describe("ShootValidator", func() {
 
 		It("returns error when probe has duplicate jobID", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 80},
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "other.com", Port: 443},
 				},
@@ -92,9 +92,9 @@ var _ = Describe("ShootValidator", func() {
 			Expect(val.Validate(ctx, shoot, nil)).To(HaveOccurred())
 		})
 
-		It("returns error when TCP probe has neither host nor ipAddress", func() {
+		It("returns error when TCP probe has no host", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Port: 80},
 				},
 			}
@@ -104,7 +104,7 @@ var _ = Describe("ShootValidator", func() {
 
 		It("returns error when TCP probe has port 0", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 0},
 				},
 			}
@@ -114,7 +114,7 @@ var _ = Describe("ShootValidator", func() {
 
 		It("returns error when TCP probe has port > 65535", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 65536},
 				},
 			}
@@ -122,10 +122,10 @@ var _ = Describe("ShootValidator", func() {
 			Expect(val.Validate(ctx, shoot, nil)).To(HaveOccurred())
 		})
 
-		It("returns error when ipAddress is not a valid IP", func() {
+		It("returns error when host is not a valid hostname or IP", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
-					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", IPAddress: "not-an-ip", Port: 80},
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
+					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "not a valid host!", Port: 80},
 				},
 			}
 			shoot := newShoot(marshalProviderConfig(cfg))
@@ -134,7 +134,7 @@ var _ = Describe("ShootValidator", func() {
 
 		It("returns error when HTTPS probe has no host", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
 					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolHTTPS, Port: 443},
 				},
 			}
@@ -142,10 +142,10 @@ var _ = Describe("ShootValidator", func() {
 			Expect(val.Validate(ctx, shoot, nil)).To(HaveOccurred())
 		})
 
-		It("returns error when Ping probe has no ipAddress", func() {
+		It("returns error when ICMP probe has no host", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
-					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolPing, Host: "example.com"},
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
+					{JobID: "probe1", Protocol: configv1alpha1.ProbeProtocolICMP},
 				},
 			}
 			shoot := newShoot(marshalProviderConfig(cfg))
@@ -154,7 +154,7 @@ var _ = Describe("ShootValidator", func() {
 
 		It("returns error when probe has unknown protocol", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
 					{JobID: "probe1", Protocol: "UDP", Host: "example.com", Port: 53},
 				},
 			}
@@ -162,9 +162,9 @@ var _ = Describe("ShootValidator", func() {
 			Expect(val.Validate(ctx, shoot, nil)).To(HaveOccurred())
 		})
 
-		It("returns nil for a valid TCP probe", func() {
+		It("returns nil for a valid TCP probe with hostname", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
 					{JobID: "tcp-probe", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 443},
 				},
 			}
@@ -172,10 +172,10 @@ var _ = Describe("ShootValidator", func() {
 			Expect(val.Validate(ctx, shoot, nil)).To(Succeed())
 		})
 
-		It("returns nil for a valid TCP probe with ipAddress override", func() {
+		It("returns nil for a valid TCP probe with IP address as host", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
-					{JobID: "tcp-probe", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", IPAddress: "1.2.3.4", Port: 443},
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
+					{JobID: "tcp-probe", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "1.2.3.4", Port: 443},
 				},
 			}
 			shoot := newShoot(marshalProviderConfig(cfg))
@@ -184,7 +184,7 @@ var _ = Describe("ShootValidator", func() {
 
 		It("returns nil for a valid HTTPS probe", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
 					{JobID: "https-probe", Protocol: configv1alpha1.ProbeProtocolHTTPS, Host: "example.com", Port: 443},
 				},
 			}
@@ -192,10 +192,10 @@ var _ = Describe("ShootValidator", func() {
 			Expect(val.Validate(ctx, shoot, nil)).To(Succeed())
 		})
 
-		It("returns nil for a valid Ping probe", func() {
+		It("returns nil for a valid ICMP probe", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
-					{JobID: "ping-probe", Protocol: configv1alpha1.ProbeProtocolPing, Host: "example.com", IPAddress: "1.2.3.4"},
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
+					{JobID: "icmp-probe", Protocol: configv1alpha1.ProbeProtocolICMP, Host: "192.0.2.1"},
 				},
 			}
 			shoot := newShoot(marshalProviderConfig(cfg))
@@ -204,10 +204,10 @@ var _ = Describe("ShootValidator", func() {
 
 		It("returns nil for multiple valid probes", func() {
 			cfg := configv1alpha1.ShootProviderConfig{
-				IndependentProbes: []configv1alpha1.IndependentProbe{
+				AdditionalProbes: []configv1alpha1.AdditionalProbe{
 					{JobID: "tcp-probe", Protocol: configv1alpha1.ProbeProtocolTCP, Host: "example.com", Port: 80},
 					{JobID: "https-probe", Protocol: configv1alpha1.ProbeProtocolHTTPS, Host: "api.example.com", Port: 443},
-					{JobID: "ping-probe", Protocol: configv1alpha1.ProbeProtocolPing, IPAddress: "10.0.0.1"},
+					{JobID: "icmp-probe", Protocol: configv1alpha1.ProbeProtocolICMP, Host: "10.0.0.1"},
 				},
 			}
 			shoot := newShoot(marshalProviderConfig(cfg))

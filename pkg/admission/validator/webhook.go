@@ -25,9 +25,8 @@ const (
 // shoot-networking-problemdetector extension.
 func New(mgr manager.Manager) (*extensionswebhook.Webhook, error) {
 	return extensionswebhook.New(mgr, extensionswebhook.Args{
-		Provider: constants.ExtensionType,
-		Name:     Name,
-		Path:     WebhookPath,
+		Name: Name,
+		Path: WebhookPath,
 		Validators: map[extensionswebhook.Validator][]extensionswebhook.Type{
 			NewShootValidator(): {{Obj: &gardencorev1beta1.Shoot{}}},
 		},

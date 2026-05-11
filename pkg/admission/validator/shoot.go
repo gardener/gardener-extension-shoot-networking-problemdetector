@@ -6,7 +6,7 @@ package validator
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 
 	extensionswebhook "github.com/gardener/gardener/extensions/pkg/webhook"
@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	sigsjson "sigs.k8s.io/json"
 
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
 	configv1alpha1 "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config/v1alpha1"
@@ -53,26 +54,26 @@ func validateProviderConfig(rawExt *runtime.RawExtension, fldPath *field.Path) e
 		return nil
 	}
 	var cfg configv1alpha1.ShootProviderConfig
-	if err := json.Unmarshal(rawExt.Raw, &cfg); err != nil {
+	strictErrs, err := sigsjson.UnmarshalStrict(rawExt.Raw, &cfg)
+	if err != nil || len(strictErrs) > 0 {
 		return field.Invalid(fldPath, string(rawExt.Raw),
-			fmt.Sprintf("failed to unmarshal providerConfig: %v", err))
+			fmt.Sprintf("failed to decode providerConfig: %v", errors.Join(append(strictErrs, err)...)))
 	}
-	if len(cfg.IndependentProbes) == 0 {
+	if len(cfg.AdditionalProbes) == 0 {
 		return nil
 	}
-	probes := make([]config.IndependentProbe, len(cfg.IndependentProbes))
-	for i, p := range cfg.IndependentProbes {
-		probes[i] = config.IndependentProbe{
-			JobID:     p.JobID,
-			Protocol:  config.ProbeProtocol(p.Protocol),
-			Host:      p.Host,
-			IPAddress: p.IPAddress,
-			Port:      p.Port,
-			Period:    p.Period,
+	probes := make([]config.AdditionalProbe, len(cfg.AdditionalProbes))
+	for i, p := range cfg.AdditionalProbes {
+		probes[i] = config.AdditionalProbe{
+			JobID:    p.JobID,
+			Protocol: config.ProbeProtocol(p.Protocol),
+			Host:     p.Host,
+			Port:     p.Port,
+			Period:   p.Period,
 		}
 	}
-	if err := validation.ValidateIndependentProbes(probes); err != nil {
-		return field.Invalid(fldPath.Child("independentProbes"), cfg.IndependentProbes, err.Error())
+	if err := validation.ValidateAdditionalProbes(probes); err != nil {
+		return field.Invalid(fldPath.Child("additionalProbes"), cfg.AdditionalProbes, err.Error())
 	}
 	return nil
 }

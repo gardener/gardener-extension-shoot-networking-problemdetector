@@ -45,7 +45,7 @@ metrics:
 networkProblemDetector:
   defaultPeriod: 5s
 #  maxPeerNodes: 7
-#  pingEnabled: false
+#  icmpEnabled: false
   k8sExporter:
     enabled: false
 #    heartbeatPeriod: 3m

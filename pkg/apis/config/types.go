@@ -22,7 +22,7 @@ type Configuration struct {
 	HealthCheckConfig *healthcheckconfigv1alpha1.HealthCheckConfig
 }
 
-// ProbeProtocol defines the protocol for an independent probe.
+// ProbeProtocol defines the protocol for an additional probe.
 type ProbeProtocol string
 
 const (
@@ -30,24 +30,21 @@ const (
 	ProbeProtocolTCP ProbeProtocol = "TCP"
 	// ProbeProtocolHTTPS uses an HTTPS GET request (TLS without certificate verification).
 	ProbeProtocolHTTPS ProbeProtocol = "HTTPS"
-	// ProbeProtocolPing uses an ICMP ping check. Requires IPAddress to be set.
-	ProbeProtocolPing ProbeProtocol = "Ping"
+	// ProbeProtocolICMP uses an ICMP ping check.
+	ProbeProtocolICMP ProbeProtocol = "ICMP"
 )
 
-// IndependentProbe defines a single network probe that is logically decoupled from the Shoot/Seed cluster topology.
-type IndependentProbe struct {
+// AdditionalProbe defines a single network probe that is logically decoupled from the Shoot/Seed cluster topology.
+type AdditionalProbe struct {
 	// JobID is the unique identifier for this probe job.
 	JobID string
-	// Protocol is the probe protocol: TCP or HTTPS.
+	// Protocol is the probe protocol: TCP, HTTPS, or ICMP.
 	Protocol ProbeProtocol
-	// Host is the target hostname used for labeling and HTTPS checks.
-	// Optional for TCP probes when IPAddress is set; required for HTTPS probes.
+	// Host is the target hostname or IP address.
+	// Required for all protocols. For TCP and HTTPS, used as the connection target.
+	// For ICMP, used as the ping target.
 	Host string
-	// IPAddress optionally overrides the IP address used for the TCP connection.
-	// When set, the TCP check connects to this IP while Host is still used as the endpoint label.
-	// Has no effect for HTTPS probes.
-	IPAddress string
-	// Port is the target port (1-65535).
+	// Port is the target port (1-65535). Not used for ICMP probes.
 	Port int
 	// Period optionally overrides the default check period for this probe.
 	Period *metav1.Duration
@@ -61,15 +58,15 @@ type NetworkProblemDetector struct {
 	// MaxPeerNodes optionally overrides the MaxPeerNodes in the agent config (maximum number of is the default period for jobs running in the agent.
 	MaxPeerNodes *int
 
-	// PingEnabled is a flag if ICMP ping checks should be performed.
-	PingEnabled *bool
+	// IcmpEnabled is a flag if ICMP ping checks should be performed.
+	IcmpEnabled *bool
 
 	// K8sExporter configures the K8s exporter for updating node conditions and creating events.
 	K8sExporter *K8sExporter
 
-	// IndependentProbes defines probes that run independently of the Shoot/Seed cluster topology,
+	// AdditionalProbes defines additional probes that run independently of the Shoot/Seed cluster topology,
 	// enabling infrastructure-level network diagnostics.
-	IndependentProbes []IndependentProbe
+	AdditionalProbes []AdditionalProbe
 }
 
 // K8sExporter contains information for the K8s exporter which patches the node conditions periodically if enabled.

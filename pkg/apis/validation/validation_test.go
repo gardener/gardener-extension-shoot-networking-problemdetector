@@ -15,10 +15,10 @@ import (
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/validation"
 )
 
-var _ = Describe("ValidateIndependentProbes", func() {
+var _ = Describe("ValidateAdditionalProbes", func() {
 	// validTCPProbe returns a minimal valid TCP probe.
-	validTCPProbe := func() config.IndependentProbe {
-		return config.IndependentProbe{
+	validTCPProbe := func() config.AdditionalProbe {
+		return config.AdditionalProbe{
 			JobID:    "test-probe",
 			Host:     "example.com",
 			Protocol: config.ProbeProtocolTCP,
@@ -27,36 +27,45 @@ var _ = Describe("ValidateIndependentProbes", func() {
 	}
 
 	It("accepts a valid TCP probe", func() {
-		Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{validTCPProbe()})).To(Succeed())
+		Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{validTCPProbe()})).To(Succeed())
 	})
 
 	It("accepts a valid HTTPS probe", func() {
 		probe := validTCPProbe()
 		probe.Protocol = config.ProbeProtocolHTTPS
-		Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).To(Succeed())
+		Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).To(Succeed())
 	})
 
-	It("accepts a valid Ping probe", func() {
-		probe := config.IndependentProbe{
-			JobID:     "ping-probe",
-			IPAddress: "192.0.2.10",
-			Protocol:  config.ProbeProtocolPing,
+	It("accepts a valid ICMP probe with IP address", func() {
+		probe := config.AdditionalProbe{
+			JobID:    "icmp-probe",
+			Host:     "192.0.2.10",
+			Protocol: config.ProbeProtocolICMP,
 		}
-		Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).To(Succeed())
+		Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).To(Succeed())
+	})
+
+	It("accepts a valid ICMP probe with hostname", func() {
+		probe := config.AdditionalProbe{
+			JobID:    "icmp-probe",
+			Host:     "gateway.example.com",
+			Protocol: config.ProbeProtocolICMP,
+		}
+		Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).To(Succeed())
 	})
 
 	Describe("jobID validation", func() {
 		It("rejects an empty jobID", func() {
 			probe := validTCPProbe()
 			probe.JobID = ""
-			Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).To(MatchError(ContainSubstring("empty jobID")))
+			Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).To(MatchError(ContainSubstring("empty jobID")))
 		})
 
 		DescribeTable("rejects jobIDs with surrounding whitespace",
 			func(jobID string) {
 				probe := validTCPProbe()
 				probe.JobID = jobID
-				Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).
+				Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).
 					To(MatchError(ContainSubstring("leading or trailing whitespace")))
 			},
 			Entry("whitespace only", "   "),
@@ -68,29 +77,36 @@ var _ = Describe("ValidateIndependentProbes", func() {
 		It("rejects duplicate jobIDs", func() {
 			p1 := validTCPProbe()
 			p2 := validTCPProbe()
-			Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{p1, p2})).To(MatchError(ContainSubstring("duplicate")))
+			Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{p1, p2})).To(MatchError(ContainSubstring("duplicate")))
 		})
 	})
 
 	Describe("host validation", func() {
-		DescribeTable("rejects IP addresses as host",
-			func(ip string) {
-				probe := validTCPProbe()
-				probe.Host = ip
-				Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).
-					To(MatchError(ContainSubstring("must be a hostname, not an IP address")))
-			},
-			Entry("IPv4", "192.0.2.10"),
-			Entry("IPv6", "::1"),
-			Entry("IPv4-mapped IPv6", "::ffff:192.0.2.10"),
-		)
+		It("rejects a probe with empty host", func() {
+			probe := validTCPProbe()
+			probe.Host = ""
+			Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).
+				To(MatchError(ContainSubstring("must have host")))
+		})
 
-		DescribeTable("rejects invalid hostnames",
+		It("accepts an IP address as host", func() {
+			probe := validTCPProbe()
+			probe.Host = "192.0.2.10"
+			Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).To(Succeed())
+		})
+
+		It("accepts an IPv6 address as host", func() {
+			probe := validTCPProbe()
+			probe.Host = "::1"
+			Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).To(Succeed())
+		})
+
+		DescribeTable("rejects invalid host values",
 			func(host string) {
 				probe := validTCPProbe()
 				probe.Host = host
-				Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).
-					To(MatchError(ContainSubstring("must be a valid hostname")))
+				Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).
+					To(MatchError(ContainSubstring("must be a valid hostname or IP address")))
 			},
 			Entry("contains spaces", "not valid"),
 			Entry("contains underscore", "not_valid.example.com"),
@@ -102,37 +118,13 @@ var _ = Describe("ValidateIndependentProbes", func() {
 			func(host string) {
 				probe := validTCPProbe()
 				probe.Host = host
-				Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).To(Succeed())
+				Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).To(Succeed())
 			},
 			Entry("simple domain", "example.com"),
 			Entry("subdomain", "api.example.com"),
 			Entry("single label", "localhost"),
 			Entry("with digits", "node1.example.com"),
 		)
-
-		It("rejects a probe with neither host nor ipAddress", func() {
-			probe := validTCPProbe()
-			probe.Host = ""
-			Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).
-				To(MatchError(ContainSubstring("must have host or ipAddress")))
-		})
-	})
-
-	Describe("ipAddress validation", func() {
-		It("rejects an invalid ipAddress", func() {
-			probe := validTCPProbe()
-			probe.Host = ""
-			probe.IPAddress = "not-an-ip"
-			Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).
-				To(MatchError(ContainSubstring("invalid ipAddress")))
-		})
-
-		It("accepts a valid IPv4 address", func() {
-			probe := validTCPProbe()
-			probe.Host = ""
-			probe.IPAddress = "192.0.2.10"
-			Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).To(Succeed())
-		})
 	})
 
 	Describe("port validation", func() {
@@ -140,7 +132,7 @@ var _ = Describe("ValidateIndependentProbes", func() {
 			func(port int) {
 				probe := validTCPProbe()
 				probe.Port = port
-				Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).
+				Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).
 					To(MatchError(ContainSubstring("invalid port")))
 			},
 			Entry("zero", 0),
@@ -150,23 +142,23 @@ var _ = Describe("ValidateIndependentProbes", func() {
 	})
 
 	Describe("period validation", func() {
-		It("rejects a period shorter than 60s", func() {
+		It("rejects a period shorter than 10s", func() {
 			probe := validTCPProbe()
-			probe.Period = &metav1.Duration{Duration: 30 * time.Second}
-			Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).
-				To(MatchError(ContainSubstring("must be at least 60s")))
+			probe.Period = &metav1.Duration{Duration: 5 * time.Second}
+			Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).
+				To(MatchError(ContainSubstring("must be at least 10s")))
 		})
 
-		It("accepts a period of exactly 60s", func() {
+		It("accepts a period of exactly 10s", func() {
 			probe := validTCPProbe()
-			probe.Period = &metav1.Duration{Duration: 60 * time.Second}
-			Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).To(Succeed())
+			probe.Period = &metav1.Duration{Duration: 10 * time.Second}
+			Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).To(Succeed())
 		})
 
 		It("accepts a nil period", func() {
 			probe := validTCPProbe()
 			probe.Period = nil
-			Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).To(Succeed())
+			Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).To(Succeed())
 		})
 	})
 
@@ -174,7 +166,7 @@ var _ = Describe("ValidateIndependentProbes", func() {
 		It("rejects an unsupported protocol", func() {
 			probe := validTCPProbe()
 			probe.Protocol = "UDP"
-			Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).
+			Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).
 				To(MatchError(ContainSubstring("unsupported protocol")))
 		})
 
@@ -182,17 +174,17 @@ var _ = Describe("ValidateIndependentProbes", func() {
 			probe := validTCPProbe()
 			probe.Protocol = config.ProbeProtocolHTTPS
 			probe.Host = ""
-			probe.IPAddress = "192.0.2.10"
-			Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).
-				To(MatchError(ContainSubstring("requires host")))
+			Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).
+				To(MatchError(ContainSubstring("must have host")))
 		})
 
-		It("rejects Ping probe without ipAddress", func() {
-			probe := validTCPProbe()
-			probe.Protocol = config.ProbeProtocolPing
-			// Host is set but Ping requires ipAddress specifically
-			Expect(validation.ValidateIndependentProbes([]config.IndependentProbe{probe})).
-				To(MatchError(ContainSubstring("requires ipAddress")))
+		It("rejects ICMP probe without host", func() {
+			probe := config.AdditionalProbe{
+				JobID:    "icmp-bad",
+				Protocol: config.ProbeProtocolICMP,
+			}
+			Expect(validation.ValidateAdditionalProbes([]config.AdditionalProbe{probe})).
+				To(MatchError(ContainSubstring("must have host")))
 		})
 	})
 })
