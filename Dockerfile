@@ -24,3 +24,10 @@ WORKDIR /
 COPY charts /charts
 COPY --from=builder /go/bin/gardener-extension-shoot-networking-problemdetector /gardener-extension-shoot-networking-problemdetector
 ENTRYPOINT ["/gardener-extension-shoot-networking-problemdetector"]
+
+############# gardener-extension-shoot-networking-problemdetector-admission
+FROM gcr.io/distroless/static-debian13:nonroot AS gardener-extension-shoot-networking-problemdetector-admission
+
+WORKDIR /
+COPY --from=builder /go/bin/gardener-extension-shoot-networking-problemdetector-admission /gardener-extension-shoot-networking-problemdetector-admission
+ENTRYPOINT ["/gardener-extension-shoot-networking-problemdetector-admission"]
