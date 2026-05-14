@@ -1,4 +1,4 @@
-# [Gardener Extension for Network Problem Detector](https://gardener.cloud)
+# Gardener Extension for Network Problem Detector
 
 [![REUSE status](https://api.reuse.software/badge/github.com/gardener/gardener-extension-shoot-networking-problemdetector)](https://api.reuse.software/info/github.com/gardener/gardener-extension-shoot-networking-problemdetector)
 [![Build](https://github.com/gardener/gardener-extension-shoot-networking-problemdetector/actions/workflows/non-release.yaml/badge.svg)](https://github.com/gardener/gardener-extension-shoot-networking-problemdetector/actions/workflows/non-release.yaml)
