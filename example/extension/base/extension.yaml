@@ -4,6 +4,15 @@ metadata:
   name: extension-shoot-networking-problemdetector
 spec:
   deployment:
+    admission:
+      runtimeCluster:
+        helm:
+          ociRepository:
+            ref: europe-docker.pkg.dev/gardener-project/public/charts/gardener/extensions/admission-shoot-networking-problemdetector-runtime:v0.33.0-dev
+      virtualCluster:
+        helm:
+          ociRepository:
+            ref: europe-docker.pkg.dev/gardener-project/public/charts/gardener/extensions/admission-shoot-networking-problemdetector-application:v0.33.0-dev
     extension:
       helm:
         ociRepository:

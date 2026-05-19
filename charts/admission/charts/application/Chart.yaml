@@ -1,0 +1,4 @@
+apiVersion: v1
+description: A Helm chart to deploy the gardener-extension-shoot-networking-problemdetector-admission application related resources
+name: admission-shoot-networking-problemdetector-application
+version: 0.1.0
