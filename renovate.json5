@@ -24,8 +24,8 @@
     {
       // Group golang updates in one PR.
       "groupName": "golang",
-      "matchDatasources": ["docker", "go-version"],
-      "matchPackagePatterns": ["golang"],
+      "matchDatasources": ["docker", "golang-version"],
+      "matchPackagePatterns": ["go","golang"],
       "automerge": true
     },
     {
@@ -36,6 +36,11 @@
         '/^github\\.com/gardener/',
       ],
       "automerge": true
+    },
+    {
+      "matchDatasources": ["github-actions"],
+      "matchPackageNames": ["actions/checkout"],
+      "automerge": true,
     },
     {
       // Ignore paths which most likely create false positives.
