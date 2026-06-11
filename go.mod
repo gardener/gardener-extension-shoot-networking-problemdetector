@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/elastic/crd-ref-docs v0.3.0
 	github.com/gardener/gardener v1.144.1
-	github.com/gardener/gardener/pkg/apis v1.143.1
+	github.com/gardener/gardener/pkg/apis v1.144.1
 	github.com/gardener/network-problem-detector v0.31.0
 	github.com/go-logr/logr v1.4.3
 	github.com/onsi/ginkgo/v2 v2.29.0
