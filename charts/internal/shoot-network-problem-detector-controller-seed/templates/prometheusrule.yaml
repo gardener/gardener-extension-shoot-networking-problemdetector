@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: shoot-network-problem-detector
+  namespace: {{ .Release.Namespace }}
+  labels:
+    prometheus: shoot
+spec:
+  groups:
+  - name: nwpd.rules
+    rules:
+    - alert: NWPDClusterNetworkDegradation
+      expr: |
+        count(
+          rate(nwpd_aggregated_observations{status="failed", jobid=~"tcp-[np]2[np]"}[5m]) > 0
+        ) > 2
+      for: 30m
+      labels:
+        service: network-problem-detector
+        severity: critical
+        type: shoot
+        visibility: operator
+      annotations:
+        summary: "{{ $value }} node(s) with persistent TCP connectivity failures for 30+ minutes"
+        description: >
+          {{ $value }} nodes have been experiencing TCP connectivity failures between nodes
+          (node-to-node and pod-to-node checks) for over 30 minutes.
+          To identify affected nodes: count by (src) (rate(nwpd_aggregated_observations{status="failed", jobid=~"tcp-[np]2[np]"}[5m]) > 0)
