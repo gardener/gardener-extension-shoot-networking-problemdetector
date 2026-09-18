@@ -179,8 +179,8 @@ github.com/gardener/gardener v1.151.0 h1:NdsQe3B+zMMy0n5e7Hnl7Xv4+dFqM6LjOPfl9FO
 github.com/gardener/gardener v1.151.0/go.mod h1:ewamWitesSUjyTbZcjB8WWiNjlGDPQ9gUe+u+dPtnww=
 github.com/gardener/gardener/hack/tools v1.151.0 h1:L+Kh7RdxN/awdzaDYBcimYBgCl/nKYP3DojN0EMZvwo=
 github.com/gardener/gardener/hack/tools v1.151.0/go.mod h1:uZ8hAuedw2u4FrceG3fs/yUDXlex1yG126UOBjIL4Ik=
-github.com/gardener/gardener/pkg/apis v1.149.0 h1:qGxrTLfO8g9bQFL/XzAcmhIbjW09XBShHkrdThu/Z64=
-github.com/gardener/gardener/pkg/apis v1.149.0/go.mod h1:jWVcJcOtKb9TynpN+Fc1hRfBmwBAPOgwzmhlt8ub2l8=
+github.com/gardener/gardener/pkg/apis v1.151.0 h1:rkiSLkECk5IQ9pL74MP9tRAZZRDrvfkEXEByqMkM/Ms=
+github.com/gardener/gardener/pkg/apis v1.151.0/go.mod h1:DkM1g18b96V6Q8OT4sIsA/ILXihRrFz/RLuYObgEgmY=
 github.com/gardener/machine-controller-manager v0.62.1 h1:TQ4Qs9aaYTqSkqFownIaEAvnrYoNpBMcp7ZMYVEgUWM=
 github.com/gardener/machine-controller-manager v0.62.1/go.mod h1:ICsymXK4VHm7NVr8Mpl6USvYcTZjUNSk6+XaVu/dd74=
 github.com/gardener/network-problem-detector v0.31.0 h1:Ws7cDIF3cfAsZJuOk3hVgPXpwYIrK+SUiJ95PmRrQvs=
