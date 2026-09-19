@@ -3,8 +3,8 @@ module github.com/gardener/gardener-extension-shoot-networking-problemdetector
 go 1.26.5
 
 require (
-	github.com/gardener/gardener v1.151.0
-	github.com/gardener/gardener/hack/tools v1.151.0
+	github.com/gardener/gardener v1.151.1
+	github.com/gardener/gardener/hack/tools v1.151.1
 	github.com/gardener/gardener/pkg/apis v1.151.0
 	github.com/gardener/network-problem-detector v0.31.0
 	github.com/go-logr/logr v1.4.4
