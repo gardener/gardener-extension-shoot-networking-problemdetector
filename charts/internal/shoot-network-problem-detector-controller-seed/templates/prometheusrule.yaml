@@ -21,8 +21,8 @@ spec:
         type: shoot
         visibility: operator
       annotations:
-        summary: "{{ $value }} node(s) with persistent TCP connectivity failures for 30+ minutes"
+        summary: "{{ "{{" }} $value {{ "}}" }} node(s) with persistent TCP connectivity failures for 30+ minutes"
         description: >
-          {{ $value }} nodes have been experiencing TCP connectivity failures between nodes
+          {{ "{{" }} $value {{ "}}" }} nodes have been experiencing TCP connectivity failures between nodes
           (node-to-node and pod-to-node checks) for over 30 minutes.
           To identify affected nodes: count by (src) (rate(nwpd_aggregated_observations{status="failed", jobid=~"tcp-[np]2[np]"}[5m]) > 0)
