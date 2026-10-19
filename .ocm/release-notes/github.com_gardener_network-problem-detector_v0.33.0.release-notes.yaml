@@ -1,0 +1,14 @@
+ocm:
+  component_name: github.com/gardener/network-problem-detector
+  component_version: v0.33.0
+release_notes:
+- audience: operator
+  author:
+    hostname: github.com
+    type: githubUser
+    username: jan-meis
+  category: bugfix
+  contents: Fix connection leak in checkHTTPSGetFunc.
+  mimetype: text/markdown
+  reference: '[#209](https://github.com/gardener/network-problem-detector/pull/209)'
+  type: standard
