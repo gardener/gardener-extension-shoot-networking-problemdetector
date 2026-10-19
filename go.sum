@@ -183,8 +183,8 @@ github.com/gardener/gardener/pkg/apis v1.151.0 h1:rkiSLkECk5IQ9pL74MP9tRAZZRDrvf
 github.com/gardener/gardener/pkg/apis v1.151.0/go.mod h1:DkM1g18b96V6Q8OT4sIsA/ILXihRrFz/RLuYObgEgmY=
 github.com/gardener/machine-controller-manager v0.63.0 h1:0mfZiop6jStdfQhsMYyTdRxyfx3rJBsXYifFZlxw6wM=
 github.com/gardener/machine-controller-manager v0.63.0/go.mod h1:MU2Cyrwvh+jYYvRUGxUMx8LNmFUvGog01YHlpsCiRrM=
-github.com/gardener/network-problem-detector v0.32.0 h1:+vXqYerymIHZxwUxwHgCiyTJnTQvpu6z/83oVgJsBvM=
-github.com/gardener/network-problem-detector v0.32.0/go.mod h1:S2GW8WgYBZum3rEZZmO6/l5qin9CnqYpE98RfjSVQjQ=
+github.com/gardener/network-problem-detector v0.33.0 h1:70TLDt4ETPr6DcWPLT2GvKRWorSMuRL7U6kTxb3AAzU=
+github.com/gardener/network-problem-detector v0.33.0/go.mod h1:S2GW8WgYBZum3rEZZmO6/l5qin9CnqYpE98RfjSVQjQ=
 github.com/gardener/pvc-autoscaler v0.3.1 h1:XMapVWBh0wrJk9Ac8WCIj6Ze7RH0FB1gP8q9XbpcyxI=
 github.com/gardener/pvc-autoscaler v0.3.1/go.mod h1:GVA7q8qiMi2UD/vcCBVbHEUijZvxVqZ1SGqiwKGHTE4=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
