@@ -1,0 +1,28 @@
+ocm:
+  component_name: github.com/gardener/network-problem-detector
+  component_version: v0.34.0
+release_notes:
+- audience: operator
+  author:
+    hostname: github.com
+    type: githubUser
+    username: axel7born
+  category: bugfix
+  contents: 'Improved robustness and correctness of the agent, controller, and CLI:
+    bounded aggregation window, fail-closed CIDR filtering, reliable ConfigMap updates,
+    RBAC scoping of events to kube-system, and minor input validation and output sanitization
+    improvements.'
+  mimetype: text/markdown
+  reference: '[#223](https://github.com/gardener/network-problem-detector/pull/223)'
+  type: standard
+- audience: operator
+  author:
+    hostname: github.com
+    type: githubUser
+    username: axel7born
+  category: bugfix
+  contents: Fixed a crash of the network-problem-detector controller that could occur
+    when DNS resolution of the external kube-apiserver failed and then recovered.
+  mimetype: text/markdown
+  reference: '[#218](https://github.com/gardener/network-problem-detector/pull/218)'
+  type: standard
