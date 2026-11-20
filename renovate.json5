@@ -41,7 +41,7 @@
       matchPackageNames: [
         '/^github\\.com/gardener/',
       ],
-      "matchUpdateTypes": ["patch", "digest"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
       "automerge": true
     },
     {
