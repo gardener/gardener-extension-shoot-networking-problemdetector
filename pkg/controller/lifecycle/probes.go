@@ -120,7 +120,6 @@ func checkCrossSourceJobIDCollisions(operatorProbes, shootProbes []config.Additi
 	return nil
 }
 
-
 // Both are identical since the probe target is external and independent of the network context.
 func buildProbeArgs(probe config.AdditionalProbe) (hostArgs, podArgs []string, err error) {
 	var args []string
