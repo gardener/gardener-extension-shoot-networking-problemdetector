@@ -53,9 +53,11 @@ func decodeShootProviderConfig(rawExt *runtime.RawExtension) (decodedShootConfig
 }
 
 // addAdditionalProbeJobs appends jobs for additional probes to both HostNetwork and PodNetwork
-// configurations of the agent. Jobs are added with prefixed IDs: "indep-n-<jobID>" for host network
-// and "indep-p-<jobID>" for pod network.
-func addAdditionalProbeJobs(agentConfig *nwpdconfig.AgentConfig, probes []config.AdditionalProbe) error {
+// configurations of the agent. jobIDPrefix is prepended to each probe's JobID when constructing
+// the agent job name; callers must use a distinct prefix per probe source (operator vs. shoot) so
+// that equal JobIDs from different sources never collide in the agent's flat job namespace.
+// Job IDs take the form "indep-{proto}-n-{jobIDPrefix}{jobID}" / "indep-{proto}-p-{jobIDPrefix}{jobID}".
+func addAdditionalProbeJobs(agentConfig *nwpdconfig.AgentConfig, probes []config.AdditionalProbe, jobIDPrefix string) error {
 	if len(probes) == 0 {
 		return nil
 	}
@@ -72,11 +74,11 @@ func addAdditionalProbeJobs(agentConfig *nwpdconfig.AgentConfig, probes []config
 
 		protoPrefix := strings.ToLower(string(probe.Protocol))
 		hostJob := nwpdconfig.Job{
-			JobID: fmt.Sprintf("indep-%s-n-%s", protoPrefix, probe.JobID),
+			JobID: fmt.Sprintf("indep-%s-n-%s%s", protoPrefix, jobIDPrefix, probe.JobID),
 			Args:  hostArgs,
 		}
 		podJob := nwpdconfig.Job{
-			JobID: fmt.Sprintf("indep-%s-p-%s", protoPrefix, probe.JobID),
+			JobID: fmt.Sprintf("indep-%s-p-%s%s", protoPrefix, jobIDPrefix, probe.JobID),
 			Args:  podArgs,
 		}
 
@@ -90,7 +92,35 @@ func addAdditionalProbeJobs(agentConfig *nwpdconfig.AgentConfig, probes []config
 	return nil
 }
 
-// buildProbeArgs returns the job args for the host-network and pod-network jobs for a given probe.
+// checkCrossSourceJobIDCollisions returns an error if any shoot probe would produce the same
+// agent job ID as an operator probe after source prefixes are applied. Because operator probes
+// use an empty prefix and shoot probes use "s-", an operator probe with jobID "s-foo" and a
+// shoot probe with jobID "foo" both resolve to "indep-{proto}-{n|p}-s-foo".
+func checkCrossSourceJobIDCollisions(operatorProbes, shootProbes []config.AdditionalProbe) error {
+	if len(operatorProbes) == 0 || len(shootProbes) == 0 {
+		return nil
+	}
+	opIDs := make(map[string]struct{}, len(operatorProbes)*2)
+	for _, p := range operatorProbes {
+		proto := strings.ToLower(string(p.Protocol))
+		opIDs[fmt.Sprintf("indep-%s-n-%s", proto, p.JobID)] = struct{}{}
+		opIDs[fmt.Sprintf("indep-%s-p-%s", proto, p.JobID)] = struct{}{}
+	}
+	for _, p := range shootProbes {
+		proto := strings.ToLower(string(p.Protocol))
+		for _, id := range []string{
+			fmt.Sprintf("indep-%s-n-s-%s", proto, p.JobID),
+			fmt.Sprintf("indep-%s-p-s-%s", proto, p.JobID),
+		} {
+			if _, exists := opIDs[id]; exists {
+				return fmt.Errorf("shoot probe %q collides with an operator probe: agent job ID %q would be duplicated (operator probe jobIDs must not start with %q)", p.JobID, id, "s-")
+			}
+		}
+	}
+	return nil
+}
+
+
 // Both are identical since the probe target is external and independent of the network context.
 func buildProbeArgs(probe config.AdditionalProbe) (hostArgs, podArgs []string, err error) {
 	var args []string

@@ -116,7 +116,7 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 	maxPeerNodes := 25
 	icmpEnabled := false
 	var k8sExporter *config.K8sExporter
-	var additionalProbes []config.AdditionalProbe
+	var operatorProbes []config.AdditionalProbe
 	if a.serviceConfig.NetworkProblemDetector != nil {
 		if a.serviceConfig.NetworkProblemDetector.DefaultPeriod != nil {
 			defaultPeriod = a.serviceConfig.NetworkProblemDetector.DefaultPeriod.Duration
@@ -130,7 +130,7 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 		if a.serviceConfig.NetworkProblemDetector.K8sExporter != nil && a.serviceConfig.NetworkProblemDetector.K8sExporter.Enabled {
 			k8sExporter = a.serviceConfig.NetworkProblemDetector.K8sExporter
 		}
-		additionalProbes = append(additionalProbes, a.serviceConfig.NetworkProblemDetector.AdditionalProbes...)
+		operatorProbes = a.serviceConfig.NetworkProblemDetector.AdditionalProbes
 	}
 
 	// Decode per-shoot additional probes from the Extension's providerConfig (if present).
@@ -138,7 +138,7 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 	if err != nil {
 		return fmt.Errorf("failed to decode shoot provider config: %w", err)
 	}
-	additionalProbes = append(additionalProbes, shootCfg.AdditionalProbes...)
+	shootProbes := shootCfg.AdditionalProbes
 	if shootCfg.IcmpEnabled != nil {
 		icmpEnabled = *shootCfg.IcmpEnabled
 	}
@@ -152,7 +152,7 @@ func (a *actuator) createShootResources(ctx context.Context, cluster *controller
 		ipFamiliesStr = string(ipfamilies[0]) + "," + string(ipfamilies[1])
 	}
 
-	shootResources, err := a.getShootAgentResources(defaultPeriod, icmpEnabled, k8sExporter, maxPeerNodes, ipFamiliesStr, additionalProbes)
+	shootResources, err := a.getShootAgentResources(defaultPeriod, icmpEnabled, k8sExporter, maxPeerNodes, ipFamiliesStr, operatorProbes, shootProbes)
 	if err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func (a *actuator) Migrate(ctx context.Context, log logr.Logger, ex *extensionsv
 	return a.Delete(ctx, log, ex)
 }
 
-func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, icmpEnabled bool, k8sExporter *config.K8sExporter, maxPeerNodes int, ipFamilies string, additionalProbes []config.AdditionalProbe) (map[string][]byte, error) {
+func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, icmpEnabled bool, k8sExporter *config.K8sExporter, maxPeerNodes int, ipFamilies string, operatorProbes, shootProbes []config.AdditionalProbe) (map[string][]byte, error) {
 	shootRegistry := managedresources.NewRegistry(kubernetes.ShootScheme, kubernetes.ShootCodec, kubernetes.ShootSerializer)
 
 	image, err := imagevector.ImageVector().FindImage(constants.AgentImageName)
@@ -330,7 +330,7 @@ func (a *actuator) getShootAgentResources(defaultPeriod time.Duration, icmpEnabl
 	}
 	objects = append(objects, clusterCM)
 
-	agentCM, err := buildDefaultAgentConfigMap(deployConfig, additionalProbes)
+	agentCM, err := buildDefaultAgentConfigMap(deployConfig, operatorProbes, shootProbes)
 	if err != nil {
 		return nil, err
 	}
@@ -402,12 +402,18 @@ func buildAgentNetworkPolicy() client.Object {
 	}
 }
 
-func buildDefaultAgentConfigMap(deployConfig *deploy.AgentDeployConfig, additionalProbes []config.AdditionalProbe) (*corev1.ConfigMap, error) {
+func buildDefaultAgentConfigMap(deployConfig *deploy.AgentDeployConfig, operatorProbes, shootProbes []config.AdditionalProbe) (*corev1.ConfigMap, error) {
+	if err := checkCrossSourceJobIDCollisions(operatorProbes, shootProbes); err != nil {
+		return nil, err
+	}
 	agentConfig, err := deployConfig.BuildAgentConfig()
 	if err != nil {
 		return nil, err
 	}
-	if err := addAdditionalProbeJobs(agentConfig, additionalProbes); err != nil {
+	if err := addAdditionalProbeJobs(agentConfig, operatorProbes, ""); err != nil {
+		return nil, err
+	}
+	if err := addAdditionalProbeJobs(agentConfig, shootProbes, "s-"); err != nil {
 		return nil, err
 	}
 	agentCM, err := deploy.BuildAgentConfigMap(agentConfig)

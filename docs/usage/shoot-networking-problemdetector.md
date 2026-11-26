@@ -71,7 +71,7 @@ A list of additional network probes that run independently of the shoot cluster 
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `jobID` | `string` | yes | Unique identifier for the probe job. Must be unique within the list. |
+| `jobID` | `string` | yes | Unique identifier for the probe job. Must be unique within the list. The same jobID may appear in both the operator's global probes and the shoot's probes without conflict. |
 | `protocol` | `string` | yes | Probe protocol: `TCP`, `HTTPS`, or `ICMP`. |
 | `host` | `string` | yes | Target hostname or IP address. |
 | `port` | `int` | TCP/HTTPS | Target port (1–65535). Not used for `ICMP`. |
@@ -159,7 +159,7 @@ spec:
 | `maxPeerNodes` | `int` | `25` | Maximum number of peer nodes each agent checks. |
 | `icmpEnabled` | `bool` | `false` | Enable ICMP ping checks between nodes. Can be overridden per shoot. |
 | `k8sExporter` | object | disabled | Configures node condition reporting (see below). |
-| `additionalProbes` | list | — | Global additional probes added to every shoot. Same schema as the shoot-level probes above; merged with any shoot-level probes. |
+| `additionalProbes` | list | — | Global additional probes added to every shoot. Same schema as the shoot-level probes above. Operator and shoot-level probes are validated independently, so the same jobID may appear in both without conflict. Operator probes produce agent job IDs of the form `indep-{proto}-{n\|p}-{jobID}`; shoot-level probes produce `indep-{proto}-{n\|p}-s-{jobID}`. |
 
 ### `networkProblemDetector.k8sExporter`
 
