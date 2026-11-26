@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	healthcheckconfigv1alpha1 "github.com/gardener/gardener/extensions/pkg/apis/config/v1alpha1"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/config/v1alpha1"
+	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/apis/validation"
 	healthcheckcontroller "github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/healthcheck"
 	"github.com/gardener/gardener-extension-shoot-networking-problemdetector/pkg/controller/lifecycle"
 )
@@ -33,7 +35,7 @@ func init() {
 	utilruntime.Must(config.AddToScheme(scheme))
 	utilruntime.Must(v1alpha1.AddToScheme(scheme))
 
-	decoder = serializer.NewCodecFactory(scheme).UniversalDecoder()
+	decoder = serializer.NewCodecFactory(scheme, serializer.EnableStrict).UniversalDecoder()
 }
 
 // NetworkProblemDetectorOptions holds options related to the network problem detector controller.
@@ -65,6 +67,12 @@ func (o *NetworkProblemDetectorOptions) Complete() error {
 
 	o.config = &NetworkProblemDetectorConfig{
 		config: config,
+	}
+
+	if config.NetworkProblemDetector != nil {
+		if err := validation.ValidateAdditionalProbes(config.NetworkProblemDetector.AdditionalProbes); err != nil {
+			return fmt.Errorf("invalid operator config: %w", err)
+		}
 	}
 
 	return nil
