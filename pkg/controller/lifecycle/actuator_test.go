@@ -58,7 +58,7 @@ var _ = Describe("activator methods", func() {
 	})
 
 	It("#buildDefaultAgentConfigMap works without probes", func() {
-		cm, err := buildDefaultAgentConfigMap(deployConfig, nil)
+		cm, err := buildDefaultAgentConfigMap(deployConfig, nil, nil)
 		Expect(err).To(BeNil())
 		Expect(cm).NotTo(BeNil())
 		data, ok := cm.Data[common.AgentConfigFilename]
@@ -77,7 +77,7 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "check-registry", Protocol: config.ProbeProtocolTCP, Host: "registry.example.com", Port: 443},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(Succeed())
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(Succeed())
 				Expect(agentConfig.HostNetwork.Jobs).To(HaveLen(hostJobsBefore + 1))
 				Expect(agentConfig.PodNetwork.Jobs).To(HaveLen(podJobsBefore + 1))
 
@@ -97,7 +97,7 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "check-ip", Protocol: config.ProbeProtocolTCP, Host: "192.0.2.1", Port: 443},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(Succeed())
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(Succeed())
 
 				hostJob := agentConfig.HostNetwork.Jobs[len(agentConfig.HostNetwork.Jobs)-1]
 				Expect(hostJob.Args).To(ConsistOf("checkTCPPort", "--endpoints", "192.0.2.1:192.0.2.1:443", "--period", "60s"))
@@ -110,7 +110,7 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "check-api", Protocol: config.ProbeProtocolHTTPS, Host: "api.example.com", Port: 443},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(Succeed())
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(Succeed())
 
 				hostJob := agentConfig.HostNetwork.Jobs[len(agentConfig.HostNetwork.Jobs)-1]
 				Expect(hostJob.JobID).To(Equal("indep-https-n-check-api"))
@@ -124,7 +124,7 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "check-http", Protocol: config.ProbeProtocolHTTPS, Host: "internal.example.com", Port: 8080},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(Succeed())
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(Succeed())
 
 				hostJob := agentConfig.HostNetwork.Jobs[len(agentConfig.HostNetwork.Jobs)-1]
 				Expect(hostJob.JobID).To(Equal("indep-https-n-check-http"))
@@ -139,7 +139,7 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "check-slow", Protocol: config.ProbeProtocolTCP, Host: "slow.example.com", Port: 8080, Period: &period},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(Succeed())
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(Succeed())
 
 				hostJob := agentConfig.HostNetwork.Jobs[len(agentConfig.HostNetwork.Jobs)-1]
 				Expect(hostJob.Args).To(ContainElements("--period", "2m0s"))
@@ -153,7 +153,36 @@ var _ = Describe("activator methods", func() {
 					{JobID: "dup", Protocol: config.ProbeProtocolTCP, Host: "a.example.com", Port: 80},
 					{JobID: "dup", Protocol: config.ProbeProtocolTCP, Host: "b.example.com", Port: 80},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(MatchError(ContainSubstring("duplicate additional probe jobID")))
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(MatchError(ContainSubstring("duplicate additional probe jobID")))
+			})
+
+			It("does not conflict when operator and shoot use the same jobID", func() {
+				agentConfig, err := deployConfig.BuildAgentConfig()
+				Expect(err).To(BeNil())
+				jobsBefore := len(agentConfig.HostNetwork.Jobs)
+
+				operatorProbes := []config.AdditionalProbe{
+					{JobID: "corp-dns", Protocol: config.ProbeProtocolTCP, Host: "dns.corp.example.com", Port: 53},
+				}
+				shootProbes := []config.AdditionalProbe{
+					{JobID: "corp-dns", Protocol: config.ProbeProtocolTCP, Host: "dns.corp.example.com", Port: 53},
+				}
+				Expect(addAdditionalProbeJobs(agentConfig, operatorProbes, "")).To(Succeed())
+				Expect(addAdditionalProbeJobs(agentConfig, shootProbes, "s-")).To(Succeed())
+				Expect(agentConfig.HostNetwork.Jobs).To(HaveLen(jobsBefore + 2))
+				Expect(agentConfig.HostNetwork.Jobs[jobsBefore].JobID).To(Equal("indep-tcp-n-corp-dns"))
+				Expect(agentConfig.HostNetwork.Jobs[jobsBefore+1].JobID).To(Equal("indep-tcp-n-s-corp-dns"))
+			})
+
+			It("detects cross-source collision when operator jobID starts with s-", func() {
+				operatorProbes := []config.AdditionalProbe{
+					{JobID: "s-foo", Protocol: config.ProbeProtocolTCP, Host: "a.example.com", Port: 80},
+				}
+				shootProbes := []config.AdditionalProbe{
+					{JobID: "foo", Protocol: config.ProbeProtocolTCP, Host: "b.example.com", Port: 80},
+				}
+				Expect(checkCrossSourceJobIDCollisions(operatorProbes, shootProbes)).
+					To(MatchError(ContainSubstring("indep-tcp-n-s-foo")))
 			})
 
 			It("returns error for empty host", func() {
@@ -163,7 +192,7 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "bad", Protocol: config.ProbeProtocolTCP, Host: "", Port: 80},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(MatchError(ContainSubstring("must have host")))
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(MatchError(ContainSubstring("must have host")))
 			})
 
 			It("returns error for HTTPS probe without host", func() {
@@ -173,7 +202,7 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "bad-https", Protocol: config.ProbeProtocolHTTPS, Port: 443},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(MatchError(ContainSubstring("must have host")))
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(MatchError(ContainSubstring("must have host")))
 			})
 
 			It("returns error for out-of-range port", func() {
@@ -183,7 +212,7 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "bad-port", Protocol: config.ProbeProtocolTCP, Host: "example.com", Port: 0},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(MatchError(ContainSubstring("invalid port")))
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(MatchError(ContainSubstring("invalid port")))
 			})
 
 			It("returns error for unsupported protocol", func() {
@@ -193,7 +222,7 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "bad-proto", Protocol: config.ProbeProtocol("UDP"), Host: "example.com", Port: 53},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(MatchError(ContainSubstring("unsupported protocol")))
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(MatchError(ContainSubstring("unsupported protocol")))
 			})
 
 			It("adds ICMP probe jobs using hostname", func() {
@@ -203,7 +232,7 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "ping-gw", Protocol: config.ProbeProtocolICMP, Host: "gateway.example.com"},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(Succeed())
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(Succeed())
 
 				hostJob := agentConfig.HostNetwork.Jobs[len(agentConfig.HostNetwork.Jobs)-1]
 				Expect(hostJob.JobID).To(Equal("indep-icmp-n-ping-gw"))
@@ -217,7 +246,7 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "ping-ip", Protocol: config.ProbeProtocolICMP, Host: "192.0.2.1"},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(Succeed())
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(Succeed())
 
 				hostJob := agentConfig.HostNetwork.Jobs[len(agentConfig.HostNetwork.Jobs)-1]
 				Expect(hostJob.Args).To(ConsistOf("pingHost", "--hosts", "192.0.2.1:192.0.2.1", "--period", "60s"))
@@ -230,13 +259,13 @@ var _ = Describe("activator methods", func() {
 				probes := []config.AdditionalProbe{
 					{JobID: "icmp-bad", Protocol: config.ProbeProtocolICMP},
 				}
-				Expect(addAdditionalProbeJobs(agentConfig, probes)).To(MatchError(ContainSubstring("must have host")))
+				Expect(addAdditionalProbeJobs(agentConfig, probes, "")).To(MatchError(ContainSubstring("must have host")))
 			})
 
 			It("returns no error for empty probes list", func() {
 				agentConfig, err := deployConfig.BuildAgentConfig()
 				Expect(err).To(BeNil())
-				Expect(addAdditionalProbeJobs(agentConfig, nil)).To(Succeed())
+				Expect(addAdditionalProbeJobs(agentConfig, nil, "")).To(Succeed())
 			})
 		})
 
