@@ -36,6 +36,14 @@ spec:
         imagePullPolicy: IfNotPresent
         securityContext:
           allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 65534
+          runAsGroup: 65534
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
         volumeMounts:
         - mountPath: /var/run/secrets/gardener.cloud/shoot/generic-kubeconfig
           name: kubeconfig
